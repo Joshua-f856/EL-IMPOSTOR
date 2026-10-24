@@ -1,0 +1,2060 @@
+/* ==========================================================================
+   1. VARIABLES Y RESET (SISTEMA DE DISEÑO UNIFICADO)
+   ========================================================================== */
+:root {
+    /* --- COLORES BASE UI --- */
+    --color-fondo-claro: #f4f7f6;
+    --color-fondo-oscuro: #121212;
+    --color-texto-claro: #1f2937;
+    --color-texto-oscuro: #f3f4f6;
+
+    /* --- COLORES DE INTERFAZ --- */
+    --color-principal: #3b82f6;
+    --color-principal-600: #2563eb;
+    --color-secundario: #22c55e;
+    --color-error: #ef4444;
+
+    /* --- PALETA DE ROLES (Unificada) --- */
+    --color-civil: #3b82f6;
+    --color-civil-dark: #1d4ed8;
+    --color-civil-glow: rgba(59, 130, 246, 0.4);
+
+    --color-impostor: #ef4444;
+    --color-impostor-dark: #b91c1c;
+    --color-impostor-glow: rgba(239, 68, 68, 0.4);
+
+    --color-srblanco: #f59e0b;
+    --color-srblanco-dark: #b45309;
+    --color-srblanco-glow: rgba(245, 158, 11, 0.4);
+
+    /* --- DIMENSIONES Y EFECTOS --- */
+    --card-radius: 18px;
+    --pill-radius: 999px;
+    --gap: 18px;
+    --max-width-app: 720px;
+
+    /* --- ESPACIADO --- */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+
+    /* --- SOMBRAS OPTIMIZADAS --- */
+    --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.12);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.18);
+    --shadow-medium: 0 12px 40px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.28);
+    --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+    --shadow-dark: 0 10px 40px rgba(0, 0, 0, 0.6);
+    --shadow-glow: 0 0 25px rgba(52, 152, 219, 0.45);
+
+    /* --- TRANSICIONES --- */
+    --ease-fast: 0.15s ease;
+    --ease-base: 0.25s ease;
+    --ease-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-bounce: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* === GLASS / CRYSTAL PRO === */
+    --glass-bg-light: rgba(255, 255, 255, 0.12);
+    --glass-bg-dark: rgba(15, 20, 30, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.22);
+    --glass-blur: 18px;
+
+    /* === SOMBRAS REALISTAS === */
+    --shadow-inner: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    --shadow-glass:
+        0 10px 30px rgba(0, 0, 0, 0.25),
+        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+
+    --shadow-glass-hover:
+        0 20px 50px rgba(0, 0, 0, 0.35),
+        inset 0 1px 1px rgba(255, 255, 255, 0.25);
+
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+
+
+    /* === TEMAS DE COLOR (actualizado) === */
+
+    /* Temas Originales */
+    --theme-azul-primary: #00c6ff;
+    --theme-azul-secondary: #0072ff;
+
+    --theme-rojo-primary: #ff2a2a;
+    --theme-rojo-secondary: #aa0000;
+
+    --theme-amarillo-primary: #ffd700;
+    --theme-amarillo-secondary: #ffaa00;
+
+    --theme-verde-primary: #00ff88;
+    --theme-verde-secondary: #008844;
+
+    --theme-naranja-primary: #ff7b00;
+    --theme-naranja-secondary: #ff4400;
+
+    --theme-purpura-primary: #bd00ff;
+    --theme-purpura-secondary: #6600cc;
+
+    /* Temas Oscuros Nuevos */
+    --theme-negro-primary: #1e293b;
+    --theme-negro-secondary: #020617;
+
+    --theme-gris-primary: #64748b;
+    --theme-gris-secondary: #334155;
+
+    --theme-azul_noche-primary: #312e81;
+    --theme-azul_noche-secondary: #1e1b4b;
+
+    --theme-bosque-primary: #065f46;
+    --theme-bosque-secondary: #064e3b;
+
+    --theme-chocolate-primary: #78350f;
+    --theme-chocolate-secondary: #451a03;
+}
+
+/* Aplicar temas dinámicamente */
+
+body[data-theme="rojo"] {
+    --color-principal: var(--theme-rojo-primary);
+    --color-principal-600: var(--theme-rojo-secondary);
+}
+
+body[data-theme="amarillo"] {
+    --color-principal: var(--theme-amarillo-primary);
+    --color-principal-600: var(--theme-amarillo-secondary);
+}
+
+body[data-theme="verde"] {
+    --color-principal: var(--theme-verde-primary);
+    --color-principal-600: var(--theme-verde-secondary);
+}
+
+body[data-theme="naranja"] {
+    --color-principal: var(--theme-naranja-primary);
+    --color-principal-600: var(--theme-naranja-secondary);
+}
+
+body[data-theme="purpura"] {
+    --color-principal: var(--theme-purpura-primary);
+    --color-principal-600: var(--theme-purpura-secondary);
+}
+
+body[data-theme="negro"] {
+    --color-principal: var(--theme-negro-primary);
+    --color-principal-600: var(--theme-negro-secondary);
+}
+
+body[data-theme="gris"] {
+    --color-principal: var(--theme-gris-primary);
+    --color-principal-600: var(--theme-gris-secondary);
+}
+
+body[data-theme="azul_noche"] {
+    --color-principal: var(--theme-azul_noche-primary);
+    --color-principal-600: var(--theme-azul_noche-secondary);
+}
+
+body[data-theme="bosque"] {
+    --color-principal: var(--theme-bosque-primary);
+    --color-principal-600: var(--theme-bosque-secondary);
+}
+
+body[data-theme="chocolate"] {
+    --color-principal: var(--theme-chocolate-primary);
+    --color-principal-600: var(--theme-chocolate-secondary);
+
+
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+
+.fondo,
+canvas,
+.background {
+    pointer-events: none;
+}
+
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background-color: var(--color-fondo-claro);
+    color: var(--color-texto-claro);
+    margin: 0;
+    padding: 24px 16px 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+body.dark {
+    background-color: var(--color-fondo-oscuro);
+    color: var(--color-texto-oscuro);
+}
+
+body.dark input,
+body.dark select,
+body.dark .pantalla {
+    color: var(--color-texto-oscuro);
+}
+
+/* ==========================================================================
+   2. HEADER OPTIMIZADO (Grid Layout + Sticky)
+   ========================================================================== */
+header {
+    width: 100%;
+    max-width: 100%;
+    position: sticky;
+    top: 10px;
+    z-index: 100;
+
+    display: grid;
+    grid-template-columns: 50px 1fr 50px;
+    align-items: center;
+
+    padding: 24px 20px;
+    padding-top: 40px;
+    margin-bottom: var(--gap);
+
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 250, 250, 0.95));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-soft);
+    border-radius: var(--card-radius);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+body.dark header {
+    background: linear-gradient(180deg, rgba(30, 30, 30, 0.9), rgba(24, 24, 24, 0.95));
+    box-shadow: var(--shadow-dark);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Áreas del Header */
+.header-extra-controls {
+    grid-column: 1;
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 12;
+}
+
+.header-titulo-container {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.header-controles {
+    grid-column: 3;
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    z-index: 10;
+}
+
+/* Tipografía Header */
+.emoji-header {
+    font-size: 4em;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+h1 {
+    font-size: 2.2em;
+    margin: 0;
+    letter-spacing: 3px;
+    font-weight: 800;
+    color: var(--color-error);
+    white-space: nowrap;
+}
+
+h2 {
+    font-size: 1.9em;
+    margin: 0;
+    font-weight: 700;
+}
+
+/* Menú Dropdown */
+.header-extra-controls .menu-icon {
+    font-size: 1.8em;
+    cursor: pointer;
+    user-select: none;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.header-extra-controls .menu-icon:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body.dark .header-extra-controls .menu-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.header-extra-controls .dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.header-extra-controls .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    min-width: 160px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    border-radius: 12px;
+    z-index: 100;
+    overflow: hidden;
+    margin-top: 10px;
+    animation: fadeIn 0.2s ease;
+}
+
+body.dark .header-extra-controls .dropdown-content {
+    background: #252525;
+}
+
+.header-extra-controls .dropdown-content button {
+    width: 100%;
+    padding: 16px 18px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    cursor: pointer;
+    font-size: 1.6em;
+    color: inherit;
+    position: relative;
+    z-index: 1000;
+    pointer-events: auto;
+}
+
+.header-extra-controls .dropdown-content button:hover {
+    background: rgba(52, 152, 219, 0.12);
+}
+
+.header-extra-controls .dropdown.open .dropdown-content {
+    display: block;
+}
+
+/* Botones de Header */
+.icon-btn {
+    position: relative;
+    background: var(--color-principal);
+    color: #fff;
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.icon-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.icon-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: translateX(-120%);
+    transition: transform 0.6s ease;
+}
+
+.icon-btn:hover::before {
+    transform: translateX(120%);
+}
+
+/* ==========================================================================
+   3. CARTA 3D OPTIMIZADA
+   ========================================================================== */
+.card-container {
+    perspective: 1200px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.palabraCaja {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border-radius: 15px;
+    will-change: transform;
+    box-shadow: var(--shadow-lg);
+}
+
+.palabraCaja:hover {
+    transform: scale(1.02);
+}
+
+.palabraCaja.flipped {
+    transform: rotateY(180deg);
+    cursor: default;
+    box-shadow: 0 0 35px rgba(255, 255, 255, 0.25);
+}
+
+.palabraCaja.bloqueado {
+    pointer-events: none;
+}
+
+/* Caras de la carta */
+.card-front,
+.card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.card-front {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    z-index: 2;
+}
+
+.card-back {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    transform: rotateY(180deg);
+    z-index: 1;
+}
+
+/* --- Mejora: scroll interno para contenido largo en la cara trasera --- */
+.card-back {
+    overflow-y: auto;
+    overflow-x: hidden;
+    gap: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+}
+
+.card-back::-webkit-scrollbar {
+    width: 6px;
+}
+
+.card-back::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+}
+
+.card-back::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Estilos específicos para cada rol en la carta */
+.card-back.civil {
+    background: linear-gradient(135deg, var(--color-civil) 0%, var(--color-civil-dark) 100%);
+    box-shadow: inset 0 0 30px var(--color-civil-glow);
+}
+
+.card-back.impostor {
+    background: linear-gradient(135deg, var(--color-impostor) 0%, var(--color-impostor-dark) 100%);
+    box-shadow: inset 0 0 30px var(--color-impostor-glow);
+}
+
+.card-back.srblanco {
+    background: linear-gradient(135deg, var(--color-srblanco) 0%, var(--color-srblanco-dark) 100%);
+    box-shadow: inset 0 0 30px var(--color-srblanco-glow);
+}
+
+/* Dark Mode para cartas */
+body.dark .card-front {
+    background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
+}
+
+body.dark .card-back {
+    background: linear-gradient(135deg, #831843 0%, #be123c 100%);
+}
+
+body.dark .card-back.civil {
+    background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+}
+
+body.dark .card-back.impostor {
+    background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+}
+
+body.dark .card-back.srblanco {
+    background: linear-gradient(135deg, #92400e 0%, #78350f 100%);
+}
+
+/* Contenido de la Carta */
+#palabraContenido {
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.front-icon {
+    font-size: clamp(3.5em, 9vw, 5em);
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+.categoria-info {
+    margin-top: 15px;
+    font-size: 0.6em;
+    opacity: 0.9;
+    font-weight: normal;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+}
+
+.pistas-info {
+    margin-top: 18px;
+    font-size: 0.75em;
+    font-weight: 600;
+    padding: 12px 18px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+    border-left: 4px solid var(--color-srblanco);
+}
+
+body.dark .pistas-info {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.pista-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 10px;
+    opacity: 0.85;
+}
+
+.pista-contenido {
+    font-size: 1.45em;
+    font-weight: 700;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 18px;
+    backdrop-filter: blur(6px);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+body.dark .pista-contenido {
+    background: rgba(52, 152, 219, 0.25);
+}
+
+#rolJugador {
+    font-size: 1.3em;
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    display: inline-block;
+}
+
+/* Pista para impostores */
+.pista-impostor {
+    font-size: 0.8em;
+    color: #fbbf24;
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border-left: 3px solid #fbbf24;
+}
+
+/* Animación de pulso para la carta */
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.palabraCaja:not(.flipped):not(.bloqueado):hover {
+    animation: pulse 1s infinite;
+}
+
+/* Brillo en los bordes de la carta */
+.palabraCaja::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c, #667eea);
+    background-size: 400% 400%;
+    border-radius: 15px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s;
+    animation: gradientShift 3s ease infinite;
+}
+
+.palabraCaja:not(.flipped):hover::before {
+    opacity: 0.7;
+}
+
+@keyframes gradientShift {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* ==========================================================================
+   4. COLORES DE ROLES (Texto)
+   ========================================================================== */
+.rol-civil {
+    color: var(--color-civil);
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--color-civil-glow);
+}
+
+.rol-impostor {
+    color: var(--color-impostor);
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--color-impostor-glow);
+}
+
+.rol-misterio,
+.rol-srblanco {
+    color: var(--color-srblanco);
+    font-weight: bold;
+    font-size: 1.4em;
+    text-shadow: 0 0 10px var(--color-srblanco-glow);
+    letter-spacing: 2px;
+}
+
+/* Badges de Rol */
+.badge-impostor,
+.badge-civil,
+.badge-srblanco {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85em;
+    display: inline-block;
+    border: 2px solid transparent;
+}
+
+.badge-impostor {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--color-impostor);
+    border-color: var(--color-impostor);
+    box-shadow: 0 0 12px var(--color-impostor-glow);
+}
+
+.badge-civil {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--color-civil);
+    border-color: var(--color-civil);
+    box-shadow: 0 0 12px var(--color-civil-glow);
+}
+
+.badge-srblanco {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--color-srblanco);
+    border-color: var(--color-srblanco);
+    box-shadow: 0 0 12px var(--color-srblanco-glow);
+}
+
+/* ==========================================================================
+   5. PANTALLAS Y CONTENEDORES
+   ========================================================================== */
+.pantalla {
+    display: none !important;
+    visibility: hidden;
+    opacity: 0;
+    width: 100%;
+    max-width: 100%;
+    background: #fff;
+    border-radius: var(--card-radius);
+    padding: 28px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 24px;
+    flex-direction: column;
+    gap: 18px;
+    text-align: center;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    overflow: visible;
+}
+
+.pantalla.activa {
+    display: flex !important;
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+body.dark .pantalla {
+    background: #1a1a1a;
+    box-shadow: var(--shadow-dark);
+}
+
+#inicio {
+    justify-content: space-between;
+    min-height: 420px;
+    padding: 32px 28px;
+}
+
+@media (min-width: 768px) {
+    .app-container {
+        max-width: 520px;
+    }
+}
+
+/* ==========================================================================
+   6. FORMULARIOS E INPUTS
+   ========================================================================== */
+label {
+    display: block;
+    margin-top: 14px;
+    font-weight: bold;
+    text-align: left;
+    font-size: 1.15em;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 14px 16px;
+    margin-top: 8px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-size: 1.15rem;
+    background: transparent;
+    color: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
+}
+
+body.dark input[type="text"],
+body.dark input[type="number"],
+body.dark select {
+    background-color: #2a2a2a;
+    border: 2px solid #444;
+}
+
+.input-control-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.input-control-group input[type="number"] {
+    text-align: center;
+    flex-grow: 1;
+}
+
+/* ==========================================================================
+   7. BOTONES PRO
+   ========================================================================== */
+.btn {
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+    padding: 16px 26px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: clamp(1.05em, 3vw, 1.25em);
+    font-weight: bold;
+    transition: transform 0.12s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+    min-width: 160px;
+    min-height: 48px;
+    line-height: 1.2;
+}
+
+.btn:focus-visible {
+    outline: 3px solid var(--color-principal);
+    outline-offset: 4px;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+    transform: translateY(1px) scale(0.97);
+}
+
+.btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: translateX(-120%);
+    transition: transform 0.6s ease;
+}
+
+.btn:hover::before {
+    transform: translateX(120%);
+}
+
+@media (max-width: 480px) {
+    .btn {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+/* Variantes de Botones */
+.main-btn {
+    background: linear-gradient(180deg, var(--color-principal), var(--color-principal-600));
+    color: #fff;
+}
+
+.play-btn {
+    background: linear-gradient(180deg, var(--color-secundario), #24b35a);
+    color: #fff;
+}
+
+.play-btn-grande {
+    font-size: 1.5em;
+    padding: 20px 36px;
+    width: 100%;
+    margin-top: 24px;
+    min-width: 240px;
+}
+
+.next-btn {
+    background: linear-gradient(180deg, #f39c12, #d98209);
+    color: #fff;
+}
+
+.volver {
+    background: #ddd;
+    color: var(--color-texto-claro);
+}
+
+body.dark .volver {
+    background: #333;
+    color: #e5e7eb;
+}
+
+.delete-btn {
+    background: var(--color-error);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 1em;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.delete-btn:hover {
+    box-shadow: 0 0 20px var(--color-error);
+    transform: rotate(-2deg) scale(1.05);
+}
+
+/* ==========================================================================
+   8. LISTAS Y ELEMENTOS
+   ========================================================================== */
+.lista-jugadores {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.lista-larga {
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-principal) transparent;
+}
+
+.lista-larga::-webkit-scrollbar {
+    width: 10px;
+}
+
+.lista-larga::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.lista-larga::-webkit-scrollbar-thumb {
+    background: var(--color-principal);
+    border-radius: 10px;
+}
+
+.lista-larga::-webkit-scrollbar-thumb:hover {
+    background: var(--color-principal-600);
+}
+
+body.dark .lista-larga::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.jugador-item,
+.categoria-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 250, 250, 0.98));
+    border: 2px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    text-align: left;
+    font-size: 1.1em;
+    transition: all 0.2s;
+}
+
+body.dark .jugador-item,
+body.dark .categoria-item {
+    background: linear-gradient(180deg, rgba(30, 30, 30, 0.95), rgba(26, 26, 26, 0.98));
+    border: 2px solid rgba(255, 255, 255, 0.06);
+}
+
+.jugador-item input[type="text"] {
+    flex-grow: 1;
+    border: none;
+    padding: 0;
+    background: transparent;
+    font-size: 1.1em;
+}
+
+.info-link {
+    cursor: pointer;
+    flex-grow: 1;
+    padding: 6px 0;
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   9. VOTACIÓN
+   ========================================================================== */
+.votacion-item {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.votacion-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+    background: linear-gradient(180deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.05));
+}
+
+.votacion-item.votacion-seleccionado {
+    background: linear-gradient(180deg, var(--color-principal), var(--color-principal-600));
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.votacion-item span {
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+.instruccion-votacion {
+    background: rgba(52, 152, 219, 0.1);
+    padding: 16px;
+    border-radius: 12px;
+    border-left: 4px solid var(--color-principal);
+    font-size: 1.05em;
+    margin: 16px 0;
+}
+
+body.dark .instruccion-votacion {
+    background: rgba(52, 152, 219, 0.2);
+}
+
+.resultados-votos {
+    text-align: left;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    margin: 16px 0;
+}
+
+body.dark .resultados-votos {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.resultados-votos p {
+    margin: 10px 0;
+    font-size: 1.1em;
+}
+
+/* ==========================================================================
+   10. MODOS DE JUEGO
+   ========================================================================== */
+.modos-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin: 24px 0;
+}
+
+.modo-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 247, 250, 0.98));
+    border: 3px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    position: relative;
+}
+
+body.dark .modo-card {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(26, 26, 26, 0.98));
+    border: 3px solid rgba(255, 255, 255, 0.08);
+}
+
+.modo-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(52, 152, 219, 0.25);
+    border-color: var(--color-principal);
+}
+
+.modo-card.modo-seleccionado {
+    background: linear-gradient(135deg, var(--color-principal), var(--color-principal-600));
+    color: white;
+    border-color: var(--color-principal);
+    box-shadow: 0 8px 30px rgba(52, 152, 219, 0.4);
+    transform: scale(1.05);
+}
+
+.modo-card.modo-seleccionado::before {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 1.8em;
+    font-weight: bold;
+    background: white;
+    color: var(--color-principal);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modo-emoji {
+    font-size: 4em;
+    margin-bottom: 16px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.modo-card h3 {
+    font-size: 1.6em;
+    margin: 12px 0;
+    font-weight: 800;
+}
+
+.modo-card p {
+    font-size: 1.05em;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.modo-card.modo-seleccionado h3,
+.modo-card.modo-seleccionado p,
+.modo-card.modo-seleccionado .modo-minimo {
+    color: white;
+}
+
+.modo-minimo {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.85em;
+    opacity: 0.75;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   11. CARTA FLIP (Pantalla de revelación)
+   ========================================================================== */
+.card-flip {
+    width: 95%;
+    max-width: 360px;
+    height: 280px;
+    margin: 24px auto;
+    perspective: 1100px;
+}
+
+.card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 600ms cubic-bezier(0.2, 0.9, 0.3, 1);
+    transform-style: preserve-3d;
+    border-radius: var(--card-radius);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* ==========================================================================
+   12. DEBATE Y CRONÓMETRO
+   ========================================================================== */
+#debate {
+    min-height: 420px;
+    justify-content: center;
+}
+
+#debate h2 {
+    margin-bottom: 10px;
+}
+
+.cronometro-debate {
+    font-size: 4.5em;
+    font-weight: 900;
+    color: var(--color-error);
+    margin: 24px 0;
+    border: 4px solid var(--color-error);
+    border-radius: 16px;
+    padding: 10px 20px;
+    display: inline-block;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+}
+
+.instruccion-debate,
+.instruccion-debate-online {
+    background: rgba(46, 204, 113, 0.1);
+    padding: 18px;
+    border-radius: 12px;
+    border-left: 4px solid var(--color-secundario);
+    font-size: 1.15em;
+    margin: 16px 0;
+    line-height: 1.6;
+}
+
+body.dark .instruccion-debate {
+    background: rgba(46, 204, 113, 0.2);
+}
+
+.instruccion-debate-secundaria {
+    background: rgba(52, 152, 219, 0.1);
+    padding: 14px;
+    border-radius: 12px;
+    border-left: 4px solid var(--color-principal);
+    font-size: 1.05em;
+    margin: 12px 0 24px 0;
+}
+
+body.dark .instruccion-debate-secundaria {
+    background: rgba(52, 152, 219, 0.2);
+}
+
+#cronometroDisplay {
+    font-size: 4.5em;
+    font-weight: 900;
+    color: var(--color-error);
+    margin: 24px 0 14px 0;
+    border: 4px solid var(--color-error);
+    border-radius: 16px;
+    padding: 10px 20px;
+    display: inline-block;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+}
+
+/* ==========================================================================
+   13. CUENTA REGRESIVA
+   ========================================================================== */
+#cuentaRegresiva {
+    min-height: 400px;
+    justify-content: center;
+    gap: 30px;
+}
+
+#cuentaRegresiva h2 {
+    font-size: 2em;
+    color: var(--color-principal);
+    margin: 0;
+    text-align: center;
+    letter-spacing: 2px;
+}
+
+.cuenta-regresiva-numero {
+    font-size: 10em;
+    font-weight: 900;
+    color: var(--color-error);
+    text-align: center;
+    animation: pulso 1s ease-in-out infinite;
+}
+
+@keyframes pulso {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+}
+
+.instruccion-preparate {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: var(--color-secundario);
+    text-align: center;
+    margin: 0;
+}
+
+/* ==========================================================================
+   14. PANTALLA DE RESULTADOS
+   ========================================================================== */
+#revelar {
+    padding-top: 8px;
+}
+
+#revelar h2 {
+    font-size: 1.7em;
+    margin-top: 4px;
+}
+
+#revelar p {
+    font-size: 1.4em;
+    margin: 10px 0;
+}
+
+.resultado-titulo {
+    font-size: 2.2em;
+    color: var(--color-secundario);
+    margin-bottom: 14px;
+}
+
+.resultado-mensaje {
+    font-size: 1.3em;
+    line-height: 1.6;
+}
+
+/* ==========================================================================
+   15. MODALES
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(11, 13, 15, 0.5);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    padding: 24px;
+    animation: fadeIn 0.35s ease forwards;
+}
+
+.modal {
+    width: 100%;
+    max-width: 450px;
+    background: var(--color-fondo-claro);
+    color: var(--color-texto-claro);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.3);
+    animation: scaleIn 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+body.dark .modal {
+    background: #1a1a1a;
+    color: var(--color-texto-oscuro);
+}
+
+.modal h3 {
+    font-size: 1.5em;
+    margin: 0 0 12px 0;
+}
+
+.modal p {
+    font-size: 1.15em;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.modal-body {
+    max-height: 60vh;
+    overflow: auto;
+}
+
+.icon-small {
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, 0.12);
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.05em;
+}
+
+/* ==========================================================================
+   16. BARRA DE PROGRESO
+   ========================================================================== */
+.progress-container {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 12px 0;
+}
+
+body.dark .progress-container {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.progress-bar {
+    height: 14px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--color-secundario), var(--color-principal));
+    transition: width 0.4s ease;
+}
+
+.progress-info {
+    font-size: 0.95em;
+    text-align: center;
+    margin-top: 6px;
+    opacity: 0.85;
+}
+
+/* ==========================================================================
+   17. UTILIDADES Y ESTADOS
+   ========================================================================== */
+.oculto {
+    display: none !important;
+}
+
+.oculto-animado {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#btnSiguiente:not(.oculto):not(.oculto-animado) {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+    margin-top: 20px;
+    animation: slideUp 0.4s ease forwards;
+}
+
+/* ==========================================================================
+   18. ANIMACIONES
+   ========================================================================== */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.fade {
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.fade-out {
+    animation: fadeOut 0.35s ease forwards;
+}
+
+/* Eliminación de jugadores */
+.jugador-item.fade-out {
+    animation: eliminarJugador 0.35s ease forwards;
+}
+
+@keyframes eliminarJugador {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+        height: auto;
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(-20px);
+        height: 0;
+        margin: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+/* ==========================================================================
+   19. ACCESIBILIDAD
+   ========================================================================== */
+:focus-visible {
+    outline: 3px solid var(--color-principal);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ==========================================================================
+   20. TOOLTIPS
+   ========================================================================== */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #111;
+    color: #fff;
+    padding: 6px 10px;
+    font-size: 0.75em;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--ease-base), transform var(--ease-base);
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
+}
+
+/* ==========================================================================
+   21. RESPONSIVE DESIGN
+   ========================================================================== */
+@media (max-width: 520px) {
+    body {
+        padding: 16px 12px 40px;
+    }
+
+    header {
+        padding: 10px 12px;
+        padding-top: 30px;
+    }
+
+    .header-controles {
+        top: 10px;
+        right: 10px;
+    }
+
+    .header-extra-controls {
+        left: 10px;
+        top: 12px;
+    }
+
+    .header-extra-controls .menu-icon {
+        font-size: 1.5em;
+    }
+
+    .emoji-header {
+        font-size: 3.2em;
+    }
+
+    h1 {
+        font-size: 1.8em;
+        letter-spacing: 2px;
+    }
+
+    h2 {
+        font-size: 1.6em;
+    }
+
+    .pantalla {
+        padding: 22px 18px;
+        gap: 14px;
+    }
+
+    .btn {
+        padding: 14px 20px;
+        font-size: 1.1em;
+    }
+
+    .play-btn-grande {
+        font-size: 1.3em;
+        padding: 16px 28px;
+    }
+
+    .lista-larga {
+        max-height: 220px;
+    }
+
+    .card-flip {
+        height: 200px;
+    }
+
+    .card-front,
+    .card-back {
+        font-size: 1.5em;
+    }
+
+    .palabraCaja {
+        height: 250px;
+    }
+
+    #palabraContenido {
+        font-size: 1.5em;
+    }
+
+    .categoria-info {
+        font-size: 0.5em;
+    }
+
+    #rolJugador {
+        font-size: 1em;
+    }
+
+    .cronometro-debate {
+        font-size: 3.5em;
+    }
+
+    #cronometroDisplay {
+        font-size: 3.5em;
+    }
+
+    .cuenta-regresiva-numero {
+        font-size: 7em;
+    }
+
+    #cuentaRegresiva h2 {
+        font-size: 1.6em;
+    }
+
+    .instruccion-preparate {
+        font-size: 1.2em;
+    }
+
+    .instruccion-debate {
+        font-size: 1.05em;
+        padding: 14px;
+    }
+
+    .instruccion-debate-secundaria {
+        font-size: 0.95em;
+        padding: 12px;
+    }
+
+    .modo-emoji {
+        font-size: 3em;
+    }
+
+    .modo-card h3 {
+        font-size: 1.3em;
+    }
+
+    .modo-card p {
+        font-size: 0.95em;
+    }
+
+    #revelar p {
+        font-size: 1.2em;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .card-front,
+    .card-back {
+        height: 250px;
+        padding: 20px;
+        font-size: 1.2em;
+    }
+}
+
+#bg-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    /* 👈 ESTA ES LA CLAVE */
+}
+
+/* APP CONTAINER */
+.app-container {
+    width: 100%;
+    max-width: var(--max-width-app);
+    margin: 0 auto;
+    padding: 0 12px;
+    position: relative;
+    z-index: 10;
+}
+
+/* MEJORAS ADICIONALES */
+.pantalla {
+    transform: translateY(16px) scale(0.98);
+}
+
+.pantalla.activa {
+    transform: translateY(0) scale(1);
+    animation: pantallaIn 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pantallaIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* EFECTO HOLO CARD */
+.holo-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.holo-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent, rgba(59, 130, 246, 0.18), transparent);
+    transform: translateX(-120%);
+    transition: transform 0.8s ease;
+}
+
+.holo-card:hover::before {
+    transform: translateX(120%);
+}
+
+/* FONDO ANIMADO CANVAS */
+canvas#bg-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+body.dark canvas#bg-canvas {
+    opacity: 0.5;
+}
+
+/* EFECTO NEÓN EN BOTONES */
+.main-btn:hover {
+    box-shadow: 0 0 18px rgba(59, 130, 246, 0.55), 0 0 36px rgba(59, 130, 246, 0.35), 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.play-btn:hover {
+    box-shadow: 0 0 18px rgba(34, 197, 94, 0.55), 0 0 36px rgba(34, 197, 94, 0.35), 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.next-btn:hover {
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.55), 0 0 36px rgba(245, 158, 11, 0.35), 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes neonPulse {
+
+    0%,
+    100% {
+        filter: brightness(1);
+    }
+
+    50% {
+        filter: brightness(1.15);
+    }
+}
+
+.main-btn:hover,
+.play-btn:hover,
+.next-btn:hover {
+    animation: neonPulse 1.5s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   22. INFO EXTRA DEL IMPOSTOR (Aliados, Categoría, Pista)
+   ========================================================================== */
+.impostor-info-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 4px;
+}
+
+.info-box {
+    width: 100%;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.6em;
+    line-height: 1.4;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.info-box-aliados {
+    background: rgba(0, 0, 0, 0.25);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.info-box-categoria {
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+.info-box-titulo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 800;
+    font-size: 1.05em;
+    margin-bottom: 6px;
+}
+
+.aliados-lista {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.aliado-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.95em;
+}
+
+.info-box-categoria-nombre {
+    font-size: 1.1em;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+.pista-impostor-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   23. FIX: Pantalla de selección de categorías (botón superpuesto)
+   ========================================================================== */
+#configSeleccionCategorias {
+    position: relative;
+}
+
+#configSeleccionCategorias .lista-jugadores {
+    max-height: 320px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+#configSeleccionCategorias .btn {
+    position: relative;
+    z-index: 1;
+}
+
+.config-item {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.dark .config-item {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+/* ===================== Multijugador online: debate, espectadores y chat ===================== */
+#debateJugadoresOnline .jugador-item,
+#espectadorJugadoresOnline .jugador-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+#debateJugadoresOnline .jugador-item small { opacity: .82; text-align: right; }
+.jugador-expulsado { opacity: .62; filter: grayscale(.35); }
+#btnPedirPalabra, #btnIrVotacionOnline, #btnContinuarRondaOnline, #btnVolverMultijugador { width: 100%; }
+.resumen-votos-online { margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(128,128,128,.25); }
+.chat-partida-global {
+  position: fixed; z-index: 999; right: 16px; bottom: 16px; width: min(340px, calc(100vw - 24px));
+  max-height: 36vh; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--color-fondo, #fff); color: var(--color-texto, #222);
+  border: 1px solid rgba(128,128,128,.45); border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,.24);
+}
+.chat-partida-cabecera { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; gap:8px; background:rgba(80,130,190,.15); }
+.chat-partida-cabecera button { min-width:30px; border:0; border-radius:8px; font-size:1.2rem; cursor:pointer; }
+.chat-mensajes-online { padding:8px 10px; overflow-y:auto; min-height:72px; max-height:22vh; display:flex; flex-direction:column; gap:8px; }
+.chat-mensaje { display:flex; flex-direction:column; gap:2px; overflow-wrap:anywhere; font-size:.9rem; }
+.chat-mensaje strong { font-size:.82rem; opacity:.8; }
+.chat-form-online { display:flex; gap:6px; padding:8px; border-top:1px solid rgba(128,128,128,.25); }
+.chat-form-online input { flex:1; min-width:0; width:0; }
+.chat-form-online button { flex-shrink:0; }
+.chat-minimizado .chat-mensajes-online, .chat-minimizado .chat-form-online { display:none; }
+.chat-minimizado { max-height:unset; }
+#votacion #listaVotacion .votacion-item { width:100%; text-align:left; cursor:pointer; }
+@media (max-width: 600px) {
+  .chat-partida-global { right: 8px; bottom: 8px; width: calc(100vw - 16px); max-height: 30vh; }
+  .chat-mensajes-online { max-height: 16vh; }
+  #debateJugadoresOnline .jugador-item { align-items:flex-start; flex-direction:column; }
+  #debateJugadoresOnline .jugador-item small { text-align:left; }
+  #debate, #votacion, #resultado, #espectadorOnline { padding-bottom: 32vh; }
+}
+
+/* ==========================================================================
+   24. ONLINE v2: texto adaptable, pantallas dinámicas y votación en vivo
+   ========================================================================== */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(50px, env(safe-area-inset-bottom));
+}
+.pantalla { overflow-wrap: anywhere; word-break: normal; padding: clamp(16px, 5vw, 28px); }
+.pantalla h2 { font-size: clamp(1.25rem, 5.4vw, 1.9rem); line-height: 1.2; }
+.pantalla h3 { font-size: clamp(1.05rem, 4.2vw, 1.4rem); }
+.pantalla p, .pantalla label, .pantalla small { font-size: clamp(.9rem, 3.8vw, 1.05rem); }
+.btn { font-size: clamp(.95rem, 4vw, 1.1rem); min-height: 44px; white-space: normal; line-height: 1.25; }
+input[type="text"], input[type="number"], select { max-width: 100%; font-size: max(16px, 1rem); }
+.nombre-jugador { overflow-wrap: anywhere; text-align: left; flex: 1 1 auto; min-width: 0; }
+.jugador-item { gap: 8px; flex-wrap: wrap; }
+.cuenta-regresiva-numero { font-size: clamp(5rem, 32vw, 10rem); line-height: 1; }
+.cronometro-debate { font-size: clamp(2.2rem, 13vw, 4.5rem); margin: 12px 0; padding: 6px 16px; max-width: 100%; }
+.cronometro-urgente { animation: pulso 1s ease-in-out infinite; }
+#palabraContenido { font-size: clamp(1.3rem, 7vw, 2rem); overflow-wrap: anywhere; hyphens: auto; }
+.card-back, .card-front { font-size: clamp(1.1rem, 5vw, 1.5rem); }
+.animate-bounce { animation: rebote-carga 1.1s ease-in-out infinite; display: inline-block; }
+@keyframes rebote-carga { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+#pantallaCarga { min-height: 60vh; min-height: 60dvh; justify-content: center; }
+#pantallaCarga .progress-container { width: min(80%, 360px) !important; }
+
+#debateJugadoresOnline .jugador-item, #espectadorJugadoresOnline .jugador-item { flex-direction: row; align-items: center; }
+#debateListos, #votacionProgreso { overflow-wrap: anywhere; }
+#btnPedirPalabra, #btnIrVotacionOnline, #btnForzarVotacionOnline, #btnForzarVotosOnline,
+#btnConfirmarVotacion, #btnNuevaPartidaOnline, #btnEnviarAdivinanza { width: 100%; }
+#btnIrVotacionOnline:disabled, #btnPedirPalabra:disabled, #btnConfirmarVotacion:disabled { opacity: .55; cursor: not-allowed; }
+.votacion-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; cursor: pointer; }
+.votacion-item[disabled] { cursor: default; transform: none; }
+.votacion-item.votacion-mio { outline: 3px solid var(--color-secundario, #2ecc71); }
+.voto-badge { font-size: .8em; opacity: .9; text-align: right; overflow-wrap: anywhere; max-width: 60%; }
+#adivinarForm:not(.oculto) { display: flex !important; }
+#adivinarForm.oculto { display: none !important; }
+.resumen-votos-online p { margin: 4px 0; }
+#resultadoMensaje { text-align: center; }
+@media (max-width: 600px) {
+  #debateOnline, #votacion, #resultado, #espectadorOnline, #adivinarOnline, #lobby { padding-bottom: calc(34vh + env(safe-area-inset-bottom)); }
+}
+
+
+/* ==========================================================================
+   25. ONLINE v3: espera de cartas, turno de palabra y aviso de conexión
+   ========================================================================== */
+#esperaJugadores .jugador-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-direction: row; }
+#esperaJugadores .jugador-item small { opacity: .85; text-align: right; }
+#btnForzarCuentaOnline { width: 100%; }
+.debate-turno {
+  font-size: clamp(1.1rem, 5vw, 1.5rem) !important;
+  font-weight: 800;
+  margin: 4px 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(80, 130, 190, .14);
+  overflow-wrap: anywhere;
+}
+.aviso-conexion {
+  position: fixed; z-index: 1000; left: 50%; top: calc(8px + env(safe-area-inset-top));
+  transform: translateX(-50%); width: min(520px, calc(100vw - 24px));
+  padding: 10px 14px; border-radius: 12px; text-align: center; font-weight: 700;
+  background: #f59e0b; color: #1f1300; box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+}
+
+
+/* ==========================================================================
+   26. SOCIAL: chat de voz (WebRTC) y reacciones flotantes
+   ========================================================================== */
+.social-rail {
+  position: fixed; z-index: 998; left: max(8px, env(safe-area-inset-left)); top: 42%;
+  transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+}
+.social-btn {
+  width: 46px; height: 46px; min-width: 46px; padding: 0; border-radius: 50%; font-size: 1.35rem; line-height: 1;
+  border: 1px solid rgba(128,128,128,.45); cursor: pointer;
+  background: var(--color-fondo, #fff); color: var(--color-texto, #222);
+  box-shadow: 0 4px 14px rgba(0,0,0,.28); display: inline-flex; align-items: center; justify-content: center;
+}
+.social-btn.activo { background: #16a34a; color: #fff; border-color: #16a34a; }
+.social-btn.pequeno { width: 40px; height: 40px; min-width: 40px; font-size: 1.15rem; box-shadow: none; }
+.social-btn:active { transform: scale(.94); }
+.social-paleta {
+  display: grid; grid-template-columns: repeat(4, 40px); gap: 6px; padding: 8px; border-radius: 14px;
+  background: var(--color-fondo, #fff); border: 1px solid rgba(128,128,128,.4); box-shadow: 0 6px 20px rgba(0,0,0,.3);
+}
+.voz-lista {
+  max-width: min(44vw, 190px); padding: 6px 8px; border-radius: 12px; font-size: .78rem;
+  background: var(--color-fondo, #fff); color: var(--color-texto, #222);
+  border: 1px solid rgba(128,128,128,.4); box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+.voz-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; overflow-wrap: anywhere; }
+.voz-punto { width: 9px; height: 9px; min-width: 9px; border-radius: 50%; background: #9ca3af; transition: background .15s, box-shadow .15s; }
+.voz-item.hablando .voz-punto { background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,.3); }
+.reacciones-capa { position: fixed; inset: 0; z-index: 997; pointer-events: none; overflow: hidden; }
+.reaccion-flotante {
+  position: absolute; bottom: 12%; display: flex; flex-direction: column; align-items: center;
+  animation: reaccionSube 3.2s ease-out forwards; will-change: transform, opacity;
+}
+.reaccion-emoji { font-size: clamp(2.2rem, 9vw, 3.4rem); filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); }
+.reaccion-nombre {
+  font-size: .72rem; font-weight: 700; padding: 1px 8px; border-radius: 10px; max-width: 110px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: rgba(0,0,0,.6); color: #fff;
+}
+@keyframes reaccionSube {
+  0%   { transform: translateY(0) scale(.6); opacity: 0; }
+  12%  { transform: translateY(-40px) scale(1.1); opacity: 1; }
+  100% { transform: translateY(-62vh) scale(1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .reaccion-flotante { animation-duration: 1.6s; } }
+@media (max-width: 640px) { .social-rail { top: 36%; } }
