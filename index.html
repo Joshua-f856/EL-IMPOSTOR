@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>🕵️ EL IMPOSTOR</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="El Impostor: juego social de deducción por roles. Local y online.">
+
+    <!-- Manifiesto -->
+    <link rel="manifest" href="manifest.webmanifest">
+
+    <!-- Favicon e Iconos -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <!-- Soporte PWA Móvil -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Impostor">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body data-state="inicio" data-theme="azul">
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="app-container">
+
+        <header>
+            <div class="header-extra-controls">
+                <div class="dropdown">
+                    <span class="menu-icon">⚙️</span>
+                    <div class="dropdown-content">
+                        <button onclick="rotarTema()" title="Cambiar tema">🎨</button>
+                        <button onclick="exportarDatos()" title="Exportar datos">📤</button>
+                        <button onclick="importarDatos()" title="Importar datos">📥</button>
+                        <button onclick="mostrarPanelEstadisticas()" title="Ver estadísticas">📊</button>
+                        <button onclick="restablecerTodo()" title="Restablecer">🔄</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-titulo-container">
+
+                <div class="progress-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <div id="progressInfo" class="progress-info"></div>
+                <span class="emoji-header">🕵️</span>
+                <h1>EL IMPOSTOR</h1>
+            </div>
+
+            <div class="header-controles">
+                <button class="icon-btn" onclick="toggleDarkMode()" aria-label="Cambiar modo">🌙</button>
+            </div>
+        </header>
+
+
+        <main class="view-container">
+
+            <section id="inicio" class="pantalla">
+                <h2>🗣️ SALA DE JUEGO</h2>
+                <button class="btn main-btn" onclick="cambiarPantalla('configJugadores')">👥 Configurar
+                    Jugadores</button>
+                <button class="btn main-btn" onclick="cambiarPantalla('configModo')">🎮 Modos de Juego</button>
+                <button class="btn main-btn" onclick="cambiarPantalla('configImpostor')">🕵️ Configurar
+                    Impostores</button>
+                <button class="btn main-btn" onclick="cambiarPantalla('configTiempo')">⏳ Configurar Tiempo</button>
+                <button class="btn main-btn" onclick="cambiarPantalla('configVotacion')">🗳️ Modo de Votación</button>
+                <button class="btn main-btn" onclick="cambiarPantalla('configCategorias')">🗂️ Editar
+                    Categorías</button>
+                <button class="btn play-btn play-btn-grande" onclick="cambiarPantalla('configSeleccionCategorias')">▶️
+                    INICIAR JUEGO</button>
+                <button class="btn volver" onclick="cambiarPantalla('seleccionModoJuego')">Volver</button>
+            </section>
+
+
+            <!-- 1. PANTALLA DE CARGA Y BIENVENIDA -->
+            <section id="pantallaCarga" class="pantalla activa">
+                <div class="emoji-header animate-bounce">🎭</div>
+                <h2>¡AQUÍ NADIE ES DE FIAR!</h2>
+                <p class="instruccion-preparate">
+                    Detectando sospechosos . . .
+                </p>
+
+                <div class="progress-container" style="width: 80%; margin: 20px auto;">
+                    <div id="barraCargaGlobal" class="progress-bar" style="width: 0%;">
+                    </div>
+                </div>
+
+                <div id="porcentajeCarga" style="font-size: 1.2em; font-weight: bold;">
+                    0%
+                </div>
+            </section>
+
+            <!-- 2. SELECCIÓN DE MODO DE JUEGO -->
+            <section id="seleccionModoJuego" class="pantalla">
+                <h2>🎮 ¿CÓMO QUIERES JUGAR?</h2>
+
+                <div class="modos-container" style="margin-top: 30px;">
+                    <div class="modo-card" onclick="elegirModoJuego('offline')">
+                        <div class="modo-emoji">📱</div>
+                        <h3>Modo Offline</h3>
+                        <p>
+                            Juega localmente pasando el dispositivo
+                            con tus amigos en la misma sala.
+                        </p>
+                    </div>
+
+                    <div class="modo-card" onclick="elegirModoJuego('online')">
+                        <div class="modo-emoji">🌐</div>
+                        <h3>Modo Online</h3>
+                        <p>
+                            Crea una sala privada con código o únete
+                            a una partida pública multijugador.
+                        </p>
+                    </div>
+                </div>
+
+                <button class="btn volver" onclick="cambiarPantalla('inicio')">
+                    Volver
+                </button>
+            </section>
+
+            <!-- 3. CONFIGURACIÓN DE SALA ONLINE -->
+            <section id="salaOnline" class="pantalla">
+                <h2>🌐 SALA MULTIJUGADOR</h2>
+
+                <label for="nombreJugadorOnline">Tu Nombre de Jugador:</label>
+                <input type="text" id="nombreJugadorOnline" placeholder="Ej: DetectiveX" maxlength="20">
+
+                <button class="btn main-btn" onclick="crearSalaPrivadaOnline()">🔒 Crear Sala Privada</button>
+
+                <label for="codigoSalaInput">¿Ya tienes un código?</label>
+                <input type="text" id="codigoSalaInput" placeholder="Ej: AB12CD" maxlength="6"
+                    style="text-transform: uppercase; letter-spacing: 3px; text-align: center;">
+                <button class="btn play-btn" onclick="unirseSalaPrivadaPorCodigo()">🔑 Unirme con código</button>
+
+                <button class="btn next-btn" onclick="unirsePartidaPublica()">🌍 Jugar partida pública</button>
+
+                <button class="btn volver" onclick="cambiarPantalla('seleccionModoJuego')">Volver</button>
+            </section>
+
+            <!-- 3a. ENTRADA POR ENLACE / QR: pantalla limpia para elegir apodo -->
+            <section id="apodoOnline" class="pantalla">
+                <h2>🕵️ ¿CÓMO TE LLAMAS?</h2>
+                <p class="instruccion-preparate">Vas a entrar a la sala <strong id="apodoSalaCodigo"
+                        style="letter-spacing: 3px;">------</strong></p>
+
+                <label for="apodoInput">Tu apodo:</label>
+                <input type="text" id="apodoInput" placeholder="Jugador Anónimo" maxlength="20" autocomplete="nickname"
+                    autocapitalize="words" enterkeyhint="go">
+                <p id="apodoError" class="oculto" role="alert" style="color: #e74c3c; font-weight: bold;"></p>
+                <small style="opacity: .75;">Si lo dejas vacío entrarás como «Jugador Anónimo». Tu apodo se recordará en
+                    este
+                    dispositivo.</small>
+
+                <button id="btnEntrarApodo" class="btn main-btn" type="button">✅ Entrar a la sala</button>
+                <button id="btnCancelarApodo" class="btn volver" type="button">Cancelar</button>
+            </section>
+
+            <!-- 3b. LOBBY DE LA SALA -->
+            <section id="lobby" class="pantalla">
+                <h2>🔒 TU SALA</h2>
+
+                <div style="padding: 15px; background: rgba(52, 152, 219, 0.1); border-radius: 12px;">
+                    <p style="margin: 0;">Código de la sala:</p>
+                    <h3 id="lobbyCodigo"
+                        style="color: var(--color-principal); letter-spacing: 4px; font-size: 2em; margin: 8px 0;">----
+                    </h3>
+                    <button id="btnCopiarCodigo" class="icon-small" onclick="copiarCodigoSala()">📋 Copiar
+                        código</button>
+                    <button id="btnCompartirEnlace" class="icon-small" type="button">🔗 Compartir enlace</button>
+                    <button id="btnMostrarQR" class="icon-small" type="button">📷 Código QR</button>
+                </div>
+
+                <p id="lobbyResumen" style="font-weight: bold;"></p>
+
+                <div id="lobbyConfigHost" class="oculto" style="text-align: left;">
+                    <label for="onModo">Modo de juego</label>
+                    <select id="onModo">
+                        <option value="clasico">Clásico (mín. 3)</option>
+                        <option value="misterio">Misterio (mín. 5)</option>
+                        <option value="caos">Caos (mín. 6)</option>
+                    </select>
+
+                    <label for="onPista">¿Dar pista al impostor?</label>
+                    <select id="onPista">
+                        <option value="si">Sí</option>
+                        <option value="no">No</option>
+                    </select>
+
+                    <label for="onCategoriaImp">¿El impostor conoce la categoría?</label>
+                    <select id="onCategoriaImp">
+                        <option value="no">No</option>
+                        <option value="si">Sí</option>
+                    </select>
+
+                    <label for="onAliados">¿Los impostores se conocen?</label>
+                    <select id="onAliados">
+                        <option value="no">No</option>
+                        <option value="si">Sí</option>
+                    </select>
+
+                    <label for="onDuracion">Duración del debate (minutos)</label>
+                    <input type="number" id="onDuracion" min="1" value="3">
+
+                    <label for="onVotacion">Tipo de votación</label>
+                    <select id="onVotacion">
+                        <option value="general" selected>General (votos visibles en tiempo real)</option>
+                        <option value="turnos">Secreta (votos ocultos hasta el final)</option>
+                    </select>
+
+                    <label for="onRondas">Rondas máximas</label>
+                    <select id="onRondas">
+                        <option value="0" selected>Sin límite</option>
+                        <option value="3">3 rondas</option>
+                        <option value="5">5 rondas</option>
+                        <option value="7">7 rondas</option>
+                        <option value="10">10 rondas</option>
+                    </select>
+
+                    <label for="onMaxJugadores">Cantidad de jugadores en la partida</label>
+                    <select id="onMaxJugadores">
+                        <option value="3">3 jugadores</option>
+                        <option value="4">4 jugadores</option>
+                        <option value="5">5 jugadores</option>
+                        <option value="6">6 jugadores</option>
+                        <option value="7">7 jugadores</option>
+                        <option value="8">8 jugadores</option>
+                        <option value="9">9 jugadores</option>
+                        <option value="10">10 jugadores</option>
+                        <option value="11">11 jugadores</option>
+                        <option value="12">12 jugadores</option>
+                        <option value="13">13 jugadores</option>
+                        <option value="14">14 jugadores</option>
+                        <option value="15">15 jugadores</option>
+                        <option value="16">16 jugadores</option>
+                        <option value="17">17 jugadores</option>
+                        <option value="18">18 jugadores</option>
+                        <option value="19">19 jugadores</option>
+                        <option value="20">20 jugadores</option>
+                    </select>
+
+                    <label>Categorías</label>
+                    <div id="onCategorias" class="lista-jugadores lista-larga"></div>
+                </div>
+
+                <h3>👥 Jugadores (<span id="lobbyContador">0</span>/<span id="lobbyCapacidad">12</span>)</h3>
+                <div id="lobbyJugadores" class="lista-jugadores lista-larga"></div>
+
+                <p id="lobbyAviso" style="font-size: 0.95em; opacity: 0.85;"></p>
+
+                <button id="btnIniciarOnline" class="btn play-btn oculto" onclick="iniciarPartidaHostOnline()">▶️
+                    Iniciar Partida</button>
+                <button class="btn volver" onclick="salirDeSalaOnline()">Salir de la sala</button>
+            </section>
+
+            <!-- 3c. ESPERA TRAS VER LA CARTA (online) -->
+            <section id="esperaOnline" class="pantalla">
+                <h2>🃏 Carta vista</h2>
+                <p id="esperaContador" style="font-size: 1.6em; font-weight: bold;">0 / 0 listos</p>
+                <p id="esperaMensaje" class="instruccion-preparate"></p>
+                <div id="esperaJugadores" class="lista-jugadores lista-larga"></div>
+                <button id="btnForzarCuentaOnline" class="btn volver oculto">⏭️ (Anfitrión) Empezar sin esperar</button>
+            </section>
+
+
+            <section id="configVotacion" class="pantalla">
+                <h2>🗳️ Configurar Modo de Votación</h2>
+                <label for="tipoVotacion">Tipo de Votación:</label>
+                <select id="tipoVotacion" onchange="guardarLocal()">
+                    <option value="general" selected>Votación General (todos votan a la vez)</option>
+                    <option value="turnos">Por Turnos (cada jugador vota en secreto)</option>
+                </select>
+                <p style="font-size: 0.9em; opacity: 0.8; margin-top: 8px;">
+                    📝 <strong>Por Turnos:</strong> Cada jugador vota sin que otros vean.<br>
+                    📢 <strong>General:</strong> Todos votan simultáneamente al mismo jugador.
+                </p>
+                <button class="btn volver" onclick="cambiarPantalla('inicio')">Volver</button>
+            </section>
+
+            <section id="configModo" class="pantalla">
+                <h2>🎮 Selecciona el Modo de Juego</h2>
+                <div class="modos-container">
+                    <div class="modo-card modo-seleccionado" data-modo="clasico" onclick="seleccionarModo('clasico')">
+                        <div class="modo-emoji">🕵️‍♂️</div>
+                        <h3>Clásico</h3>
+                        <p>Ciudadanos tienen la misma palabra, impostor tiene una palabra diferente pero parecida.
+                            ¡Descubre al impostor!</p>
+                        <small class="modo-minimo">Mínimo: 3 jugadores</small>
+                    </div>
+                    <div class="modo-card" data-modo="misterio" onclick="seleccionarModo('misterio')">
+                        <div class="modo-emoji">🎩</div>
+                        <h3>Misterio</h3>
+                        <p>¡El <strong>Sr. Blanco</strong> no tiene palabra! Si lo eliminan y adivina la palabra, gana
+                            inmediatamente.</p>
+                        <small class="modo-minimo">Mínimo: 5 jugadores</small>
+                    </div>
+                    <div class="modo-card" data-modo="caos" onclick="seleccionarModo('caos')">
+                        <div class="modo-emoji">🌪️</div>
+                        <h3>Caos</h3>
+                        <p>Número ALEATORIO de impostores. Reglas especiales, eventos sorpresa. ¡Caos total!</p>
+                        <small class="modo-minimo">Mínimo: 6 jugadores</small>
+                    </div>
+                </div>
+                <button class="btn volver" onclick="cambiarPantalla('inicio')">Volver</button>
+            </section>
+
+            <section id="configJugadores" class="pantalla">
+                <h2>👥 Configurar Jugadores</h2>
+                <label for="numJugadores">Cantidad de Jugadores:</label>
+                <div class="input-control-group">
+                    <button class="icon-btn" onclick="ajustarNumeroJugadores(-1)">➖</button>
+                    <input type="number" id="numJugadores" min="3" max="20" value="3">
+                    <button class="icon-btn" onclick="ajustarNumeroJugadores(1)">➕</button>
+                </div>
+                <div id="listaJugadores" class="lista-jugadores lista-larga"></div>
+                <button class="btn volver" onclick="cambiarPantalla('inicio')">Volver</button>
+            </section>
+
+            <section id="configImpostor" class="pantalla">
+                <h2>🕵️ Configurar Impostores</h2>
+                <label for="numImpostores">Número de Impostores:</label>
+                <div class="input-control-group">
+                    <button class="icon-btn" onclick="ajustarNumeroImpostores(-1)">➖</button>
+                    <input type="number" id="numImpostores" min="1" value="1">
+                    <button class="icon-btn" onclick="ajustarNumeroImpostores(1)">➕</button>
+                </div>
+
+                <label for="pistaImpostor">¿Dar pista al impostor?</label>
+                <select id="pistaImpostor" onchange="guardarLocal()">
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                </select>
+
+                <label for="categoriaImpostor">¿El impostor conoce la categoría?</label>
+                <select id="categoriaImpostor" onchange="guardarLocal()">
+                    <option value="no">No </option>
+                    <option value="si">Sí </option>
+                </select>
+                <p style="font-size: 0.85em; opacity: 0.75; margin-top: 4px; text-align:left;">
+                    📂 Si activas esto, el impostor verá a qué categoría pertenece la palabra.
+                </p>
+
+                <label for="impostoresSeConocen">¿Los impostores se conocen entre sí?</label>
+                <select id="impostoresSeConocen" onchange="guardarLocal()">
+                    <option value="no">No </option>
+                    <option value="si">Sí </option>
+                </select>
+                <p style="font-size: 0.85em; opacity: 0.75; margin-top: 4px; text-align:left;">
+                    🤝 Si activas esto, los impostores verán quiénes son sus aliados al revelar la carta.
+                </p>
+
+                <button class="btn volver" onclick="cambiarPantalla('inicio')">Volver</button>
+            </section>
+
+            <section id="configTiempo" class="pantalla">
+                <h2>⏳ Configurar Duración</h2>
+                <label for="duracionPartida">Duración de partida (minutos):</label>
+
+                <input type="number" id="duracionPartida" min="1" value="3" onchange="guardarLocal()">
+
+                <div class="config-item">
+
+                    <label>🔁 Número de rondas</label>
+
+                    <div class="input-control-group">
+
+                        <button class="icon-btn" onclick="ajustarNumeroRondas(-1)">
+                            ➖
+                        </button>
+
+                        <input type="number" id="numRondas" value="10" min="1" max="50" readonly>
+
+                        <button class="icon-btn" onclick="ajustarNumeroRondas(1)">
+                            ➕
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <p style="font-size: 0.9em; opacity: 0.8; margin-top: 8px;">⏰ Si el tiempo llega a cero, los impostores
+                    ganan automáticamente.</p>
+                <button class="btn volver" onclick="cambiarPantalla('inicio')">Volver</button>
+            </section>
+
+            <section id="configCategorias" class="pantalla">
+                <h2>🗂️ Editar Categorías</h2>
+                <input type="text" id="nuevaCategoria" placeholder="Nombre de la nueva categoría">
+                <button class="btn main-btn" onclick="agregarCategoria()">Agregar Categoría</button>
+                <div id="categoriasLista" class="lista-jugadores lista-larga"></div>
+                <button class="btn volver" onclick="cambiarPantalla('inicio')">Volver</button>
+            </section>
+
+            <section id="editarCategoria" class="pantalla">
+                <h2 id="tituloCategoria"></h2>
+                <label for="nuevaPalabra">Palabra principal:</label>
+                <input type="text" id="nuevaPalabra" placeholder="Ej: Pizza">
+                <label for="pistasInput">Pistas (separadas por coma):</label>
+                <input type="text" id="pistasInput" placeholder="Ej: Queso, Circular, Tomate">
+                <button class="btn main-btn" onclick="agregarPalabraYpistas()">Guardar Palabra/Pistas</button>
+                <div id="palabrasLista" class="lista-jugadores lista-larga"></div>
+                <button class="btn volver" onclick="cambiarPantalla('configCategorias')">Volver a Categorías</button>
+            </section>
+
+            <section id="configSeleccionCategorias" class="pantalla">
+                <h2>✅ Categorías de la Partida</h2>
+                <p>Selecciona las categorías que se usarán:</p>
+                <div id="categoriasSeleccionLista" class="lista-jugadores lista-larga"></div>
+                <button class="btn play-btn" onclick="empezarPartida()">▶️ Empezar a jugar</button>
+                <button class="btn volver" onclick="cambiarPantalla('inicio')">Volver</button>
+            </section>
+
+            <section id="revelar" class="pantalla" aria-live="polite">
+                <h2 id="nombreJugador">Turno de [Nombre]</h2>
+                <p id="rolJugador" aria-atomic="true">Toca la carta para revelar tu rol</p>
+                <div id="palabraCaja" class="card-flip palabraCaja" role="button" tabindex="0"
+                    aria-label="Toca para revelar tu rol" onclick="revelarPalabra()"
+                    onkeydown="if(event.key==='Enter' || event.key===' '){ revelarPalabra(); }">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <span class="front-icon">🃏</span>
+                        </div>
+                        <div class="card-back" id="palabraContenido"></div>
+                    </div>
+                </div>
+                <button class="btn next-btn oculto oculto-animado" id="btnSiguiente" onclick="siguienteJugador()">
+                    Siguiente Jugador
+                </button>
+            </section>
+
+            <section id="cuentaRegresiva" class="pantalla">
+                <h2 id="jugadorEmpieza">EMPIEZA JUGADOR 1</h2>
+                <div class="cuenta-regresiva-numero" id="numeroRegresivo">3</div>
+                <p class="instruccion-preparate">¡Prepárense para el debate!</p>
+            </section>
+
+            <!-- Cuenta regresiva ONLINE (independiente de la offline) -->
+            <section id="cuentaRegresivaOnline" class="pantalla">
+                <h2 id="jugadorEmpiezaOnline">¡PREPÁRENSE!</h2>
+                <div class="cuenta-regresiva-numero" id="numeroRegresivoOnline">3</div>
+                <p class="instruccion-preparate">¡Prepárense para el debate!</p>
+            </section>
+
+            <section id="debate" class="pantalla">
+                <h2>💬 FASE DE DEBATE</h2>
+                <div id="cronometroDisplay" class="cronometro-debate">00:00</div>
+                <p class="instruccion-debate">Los jugadores dicen una palabra o frase relacionada con la palabra
+                    secreta.</p>
+                <p class="instruccion-debate-secundaria">Cuando estén listos, procedan a votar.</p>
+                <button class="btn play-btn" onclick="irAVotacion()">Ir a Votación</button>
+            </section>
+
+            <!-- Fase de debate ONLINE (independiente de la offline) -->
+            <section id="debateOnline" class="pantalla">
+                <h2>💬 FASE DE DEBATE</h2>
+                <p id="debateRonda" class="instruccion-preparate">Ronda 1</p>
+                <div id="cronometroOnline" class="cronometro-debate">00:00</div>
+                <p id="debateTurno" class="debate-turno" aria-live="polite"></p>
+                <p class="instruccion-debate-online">Pulsa <strong>Hablar</strong> para pedir tu turno y, cuando todos
+                    hayan terminado, <strong>Listo para votar</strong>. La votación empieza cuando todos estén listos.
+                </p>
+                <h3>👥 Jugadores</h3>
+                <div id="debateJugadoresOnline" class="lista-jugadores lista-larga"></div>
+                <p id="debateHablaron" style="font-weight:bold;"></p>
+                <p id="debateListos" style="font-weight:bold;"></p>
+                <button id="btnPedirPalabra" class="btn next-btn">✋ Hablar</button>
+                <button id="btnIrVotacionOnline" class="btn play-btn">🗳️ Listo para votar</button>
+                <button id="btnForzarVotacionOnline" class="btn volver oculto">⏭️ (Anfitrión) Abrir votación ya</button>
+            </section>
+
+            <section id="espectadorOnline" class="pantalla">
+                <h2>👁️ Modo espectador</h2>
+                <p id="espectadorMensaje">Has sido expulsado. Puedes seguir la partida y usar el chat, pero no puedes
+                    votar ni pedir la palabra.</p>
+                <div id="espectadorJugadoresOnline" class="lista-jugadores lista-larga"></div>
+                <p id="espectadorEstadoOnline">La partida continúa en tiempo real.</p>
+            </section>
+
+            <section id="adivinarOnline" class="pantalla">
+                <h2 id="adivinarTitulo">🎩 Sr. Blanco</h2>
+                <p id="adivinarTexto" class="instruccion-preparate"></p>
+                <div id="adivinarCrono" class="cronometro-debate">30 s</div>
+                <div id="adivinarForm" class="oculto" style="display:flex; flex-direction:column; gap:10px;">
+                    <input type="text" id="adivinarInput" maxlength="40" placeholder="La palabra secreta es..."
+                        autocomplete="off">
+                    <button id="btnEnviarAdivinanza" class="btn play-btn">✅ Enviar intento</button>
+                </div>
+            </section>
+
+            <section id="votacion" class="pantalla">
+                <h2 id="tituloVotacion">🗳️ VOTACIÓN</h2>
+                <p class="instruccion-votacion">Cada jugador vota en secreto. Los votos se revelarán al final de la
+                    ronda.</p>
+                <p id="votacionCrono" style="font-weight:bold;"></p>
+                <div id="listaVotacion" class="lista-jugadores lista-larga"></div>
+                <p id="votacionProgreso" style="font-weight:bold;"></p>
+                <button id="btnConfirmarVotacion" class="btn play-btn oculto"></button>
+                <button id="btnForzarVotosOnline" class="btn volver oculto">⏭️ (Anfitrión) Cerrar votación ya</button>
+            </section>
+
+            <section id="resultado" class="pantalla" aria-live="polite">
+                <h2 id="resultadoTitulo" class="resultado-titulo"></h2>
+                <div id="resultadoMensaje" class="resultado-mensaje"></div>
+                <p id="resultadoTemporizador" class="instruccion-preparate"></p>
+                <div style="display:flex; flex-direction:column; gap:12px; width:100%;">
+                    <button id="btnResultado" class="btn play-btn">Continuar</button>
+                    <button id="btnIrVotacion" class="btn play-btn oculto">🗳️ Ir a Votación</button>
+                    <button id="btnContinuarRondaOnline" class="btn play-btn oculto">▶️ Continuar ahora</button>
+                    <button id="btnNuevaPartidaOnline" class="btn main-btn oculto">🔄 Nueva partida (misma
+                        sala)</button>
+                    <button id="btnVolverMultijugador" class="btn volver oculto">↩️ Salir de la sala</button>
+                </div>
+            </section>
+
+        </main>
+
+        <section id="panelEstadisticas" class="pantalla">
+            <h2>📊 Estadísticas</h2>
+            <div id="contenidoEstadisticas"></div>
+            <button class="btn volver" onclick="cambiarPantalla('inicio')">Cerrar</button>
+        </section>
+
+    </div>
+
+    <div id="avisoConexionOnline" class="aviso-conexion oculto" role="alert"></div>
+    <div id="avisoRedOnline" class="aviso-red oculto" role="status" aria-live="polite"></div>
+
+    <script type="module" src="script.js"></script>
+    <script>
+        // PWA: registra el service worker (solo funciona con https o localhost)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => {
+                        console.log('✅ Service Worker registrado correctamente con ámbito:', reg.scope);
+                    })
+                    .catch((err) => {
+                        console.warn('❌ Error al registrar el Service Worker:', err);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>
