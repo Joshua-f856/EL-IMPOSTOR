@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://impostor-m3f4sh-2046xo.netlify.app/sitemap.xml
