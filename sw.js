@@ -1,7 +1,7 @@
 // Service worker de El Impostor — "red primero": siempre intenta traer la versión nueva y solo usa la
 // caché si no hay conexión. Así nunca se queda atascado con un online.js viejo.
 // Sube VERSION cada vez que cambies archivos estáticos (iconos, css, js) para limpiar cachés antiguas.
-const VERSION = 'impostor-v11';
+const VERSION = 'impostor-v12';
 
 const BASICOS = [
   './',
@@ -13,6 +13,9 @@ const BASICOS = [
   './qr.js',
   './efectos.js',
   './perfil.js',
+  './i18n.js',
+  './fonts/nunito-latin-var.woff2',
+  './fonts/special-elite-latin-400.woff2',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',

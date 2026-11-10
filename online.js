@@ -1676,6 +1676,7 @@ export function initOnline(deps) {
 
     const btn = $('btnConfirmarVotacion');
     if (btn) {
+      btn.onclick = null; // el modo offline deja su propio onclick: aquí solo vale el listener online
       btn.classList.toggle('oculto', yaVote);
       btn.disabled = !seleccionVoto || votoEnCurso;
       btn.textContent = seleccionVoto ? `Confirmar voto por ${nombreDe(seleccionVoto)}` : 'Elige a un jugador';

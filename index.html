@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>EL JUEGO DEL IMPOSTOR | Multijugador Online Gratis</title>
     <meta name="theme-color" content="#2563eb">
+    <meta name="color-scheme" content="light dark">
     <meta name="description"
         content="Juega gratis a El Juego del Impostor online. Un juego multijugador de deducción social, palabras secretas y chat de voz en tiempo real para jugar con amigos.">
 
@@ -45,12 +46,15 @@
     <meta name="apple-mobile-web-app-title" content="Impostor">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+    <link rel="preload" href="fonts/nunito-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/special-elite-latin-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body data-state="inicio" data-theme="azul">
 
-    <canvas id="bg-canvas"></canvas>
+    <noscript><p style="padding:24px;text-align:center">Este juego necesita JavaScript. / This game needs JavaScript.</p></noscript>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
 
     <div class="app-container">
 
@@ -74,15 +78,15 @@
             </div>
 
             <div class="header-controles">
-                <button class="icon-btn" onclick="toggleDarkMode()" aria-label="Cambiar modo">🌙</button>
+                <button class="icon-btn" type="button" onclick="toggleDarkMode()" aria-label="Cambiar modo claro/oscuro" title="Cambiar modo claro/oscuro">🌙</button>
             </div>
         </header>
 
 
-        <main class="view-container">
+        <main class="view-container" id="contenido">
 
             <section id="inicio" class="pantalla">
-                <h2>👥 CREAR SALA</h2>
+                <h2>📱 PARTIDA LOCAL</h2>
                 <button class="btn main-btn" onclick="cambiarPantalla('configJugadores')">👥 Configurar
                     Jugadores</button>
                 <button class="btn main-btn" onclick="cambiarPantalla('configModo')">🎮 Modos de Juego</button>
@@ -307,7 +311,7 @@
                     <div class="modo-card modo-seleccionado" data-modo="clasico" onclick="seleccionarModo('clasico')">
                         <div class="modo-emoji">🕵️‍♂️</div>
                         <h3>Clásico</h3>
-                        <p>Ciudadanos tienen la misma palabra, impostor tiene una palabra diferente pero parecida.
+                        <p>Los civiles conocen la palabra secreta; el impostor solo recibe una pista (si está activada).
                             ¡Descubre al impostor!</p>
                         <small class="modo-minimo">Mínimo: 3 jugadores</small>
                     </div>
@@ -650,7 +654,7 @@
                     data-i18n="menu.reglas">Reglas del juego</span></button>
             <button class="drawer-item" type="button" onclick="abrirAyuda()">
                 <span class="drawer-icono">💡</span>
-                <span>Ayúdanos a mejorar</span>
+                <span data-i18n="menu.ayuda">Ayúdanos a mejorar</span>
             </button>
             <button class="drawer-item" type="button" onclick="abrirApoyo()">
                 <span class="drawer-icono">☕</span>

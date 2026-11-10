@@ -13,7 +13,8 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-import { initOnline } from "./online.js";
+import { initOnline, repartirRoles, maxImpostoresPorModo } from "./online.js";
+import { iniciarI18n } from "./i18n.js";
 import { efectoFinPartida, limpiarEfectos } from "./efectos.js";
 import { initPerfil } from "./perfil.js";
 
@@ -332,6 +333,11 @@ function normalizarNombre(texto) {
     .trim();
 }
 
+// Escapa texto de usuario / de la nube antes de insertarlo como HTML (evita inyección de código)
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => (
+  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+));
+
 function validarTextoCampo(texto, maxLongitud) {
   const limpio = (texto || '').trim();
   if (!limpio) return { valido: false, motivo: 'El campo no puede estar vacío.' };
@@ -636,6 +642,7 @@ function siguienteRonda() {
     if (barraProgreso) {
       barraProgreso.style.width = '0%';
     }
+    if ($('progressInfo')) $('progressInfo').textContent = '';
     // ---------------------------------------------
 
     return;
@@ -743,6 +750,7 @@ function cambiarPantalla(id) {
     // Al volver al menú principal se cancela cualquier cronómetro o cuenta
     // regresiva de una partida anterior, para que nunca sigan corriendo
     // "fantasmas" en segundo plano.
+    guardarInmediato(); // el guardado con retardo se cancelaría junto con los temporizadores
     limpiarTodosLosTemporizadores();
     reproducirSonido('musica_menu', { loop: true, volumen: CONFIG_JUEGO.VOLUMEN_MUSICA_MENU });
   } else {
@@ -752,8 +760,8 @@ function cambiarPantalla(id) {
 }
 
 // ============================== TEMA Y MODO OSCURO ==============================
-function cambiarTema(tema) {
-  reproducirSonido('click');
+function cambiarTema(tema, silencioso = false) {
+  if (!silencioso) reproducirSonido('click');
   document.body.dataset.theme = tema;
   localStorage.setItem(LS_PREFIX + 'tema', tema);
 
@@ -767,7 +775,7 @@ function cambiarTema(tema) {
 
 function cargarTema() {
   const temaGuardado = localStorage.getItem(LS_PREFIX + 'tema') || 'azul';
-  cambiarTema(temaGuardado);
+  cambiarTema(temaGuardado, true); // al arrancar no suena nada (el navegador bloquea el audio)
 }
 
 function toggleDarkMode() {
@@ -830,22 +838,8 @@ function ajustarNumeroRondas(delta) {
 }
 
 function calcularMaximosImpostores() {
-  const totalJugadores = estado.jugadores.length;
-  const modo = estado.modoJuego;
-
-  if (modo === 'clasico') {
-    return Math.max(1, Math.floor((totalJugadores - 1) / 2));
-  }
-
-  if (modo === 'misterio') {
-    return Math.max(1, Math.floor((totalJugadores - 2) / 2));
-  }
-
-  if (modo === 'caos') {
-    return Math.max(1, Math.floor((totalJugadores - 3) / 2));
-  }
-
-  return Math.max(1, Math.floor(totalJugadores / 4));
+  // Misma fórmula que el modo online: los civiles siempre empiezan siendo mayoría
+  return maxImpostoresPorModo(estado.jugadores.length, estado.modoJuego);
 }
 
 function actualizarLimitesImpostores() {
@@ -1022,7 +1016,7 @@ function crearModal({
   title = '',
   body = '',
   okText = 'Aceptar',
-  cancelText = 'Cancelar',
+  cancelText = '',
   onOk = null,
   onCancel = null
 }) {
@@ -1056,7 +1050,7 @@ function crearModal({
     if (!document.querySelector('.modal-overlay')) document.body.classList.remove('modal-abierto');
     if (cb) cb();
   };
-  const hayCancelar = onCancel !== null || !!cancelText;
+  const hayCancelar = !!cancelText;
   // Esc = cancelar (o aceptar si el modal solo tiene un botón)
   const alTeclear = (e) => {
     if (e.key !== 'Escape' || overlay !== [...document.querySelectorAll('.modal-overlay')].pop()) return;
@@ -1095,7 +1089,7 @@ function crearModal({
 function confirmModal(message, cb) {
   crearModal({
     title: 'Confirmar',
-    body: `<p>${message}</p>`,
+    body: `<p>${message}</p>`, // el texto lo arma el propio juego: los nombres se escapan con esc() en cada llamada
     okText: 'Sí',
     cancelText: 'No',
     onOk: () => cb(true),
@@ -1387,11 +1381,17 @@ function deshacerImportacion() {
 }
 
 function restablecerTodo() {
-  confirmModal('¿Restablecer todo?', (ok) => {
+  confirmModal('¿Restablecer todo? Se borrarán la configuración, los nombres de jugadores, las estadísticas locales y el tema. Tu perfil y tu idioma se conservan.', (ok) => {
     if (ok) {
       limpiarTodosLosTemporizadores();
       detenerTodosSonidos();
-      reproducirSonido('whoosh');
+      try {
+        // Borra la configuración, categorías locales y tema; conserva perfil, apodo, idioma y sesión de Firebase
+        const conservar = ['impostor_apodo', 'impostor_idioma'];
+        Object.keys(localStorage)
+          .filter((k) => k.startsWith(LS_PREFIX) && !conservar.includes(k) && !k.startsWith('impostor_perfil_'))
+          .forEach((k) => localStorage.removeItem(k));
+      } catch (err) { console.warn('No se pudo limpiar el almacenamiento:', err); }
       location.reload();
     }
   });
@@ -1619,7 +1619,7 @@ function mostrarJugadores() {
         });
         return;
       }
-      confirmModal(`¿Eliminar ${j}?`, (ok) => {
+      confirmModal(`¿Eliminar ${esc(j)}?`, (ok) => {
         if (!ok) return;
         reproducirSonido('eliminar');
         estado.jugadores.splice(i, 1);
@@ -1668,7 +1668,7 @@ function mostrarCategorias() {
         return;
       }
 
-      confirmModal(`¿Eliminar "${cat}"?`, async (ok) => {
+      confirmModal(`¿Eliminar "${esc(cat)}"?`, async (ok) => {
         if (!ok) return;
 
         reproducirSonido("eliminar");
@@ -1805,7 +1805,7 @@ function mostrarPalabras() {
         return crearModal({ title: 'Error', body: '<p>Mínimo 1 palabra.</p>', okText: 'Cerrar', onCancel: null });
       }
 
-      confirmModal(`¿Eliminar "${item.palabra}"?`, async (ok) => {
+      confirmModal(`¿Eliminar "${esc(item.palabra)}"?`, async (ok) => {
         if (!ok) return;
 
         reproducirSonido("eliminar");
@@ -1831,7 +1831,7 @@ async function agregarPalabraYpistas() {
   const validacionPalabra = validarTextoCampo($('nuevaPalabra').value, CONFIG_JUEGO.MAX_LONGITUD_CATEGORIA);
   if (!validacionPalabra.valido) {
     reproducirSonido('error');
-    return crearModal({ title: 'Error', body: `<p>Palabra: ${validacionPalabra.motivo}</p>`, okText: 'Cerrar', onCancel: null });
+    return crearModal({ title: 'Error', body: `<p>Palabra: ${esc(validacionPalabra.motivo)}</p>`, okText: 'Cerrar', onCancel: null });
   }
   const palabra = validacionPalabra.texto;
 
@@ -1843,7 +1843,7 @@ async function agregarPalabraYpistas() {
   const pistaDemasiadoLarga = pistasCrudas.find(p => p.length > CONFIG_JUEGO.MAX_LONGITUD_PISTA);
   if (pistaDemasiadoLarga) {
     reproducirSonido('error');
-    return crearModal({ title: 'Error', body: `<p>La pista "${pistaDemasiadoLarga}" supera los ${CONFIG_JUEGO.MAX_LONGITUD_PISTA} caracteres.</p>`, okText: 'Cerrar', onCancel: null });
+    return crearModal({ title: 'Error', body: `<p>La pista "${esc(pistaDemasiadoLarga)}" supera los ${CONFIG_JUEGO.MAX_LONGITUD_PISTA} caracteres.</p>`, okText: 'Cerrar', onCancel: null });
   }
   // Quita pistas duplicadas manteniendo el orden en que se escribieron
   const pistas = [...new Set(pistasCrudas.map(normalizarNombre))]
@@ -1855,7 +1855,7 @@ async function agregarPalabraYpistas() {
   );
   if (yaExiste) {
     reproducirSonido('error');
-    return crearModal({ title: 'Error', body: `<p>Ya existe la palabra "${palabra}" en esta categoría.</p>`, okText: 'Cerrar', onCancel: null });
+    return crearModal({ title: 'Error', body: `<p>Ya existe la palabra "${esc(palabra)}" en esta categoría.</p>`, okText: 'Cerrar', onCancel: null });
   }
 
   reproducirSonido('click');
@@ -1930,6 +1930,9 @@ function actualizarSeleccionModo() {
     caos: CONFIG_JUEGO.MIN_JUGADORES_CAOS
   };
 
+  // Si bajaste el número de jugadores y el modo elegido ya no es posible, se vuelve a Clásico
+  if (totalJugadores < (reglasMinimo[estado.modoJuego] || CONFIG_JUEGO.MIN_JUGADORES)) estado.modoJuego = 'clasico';
+
   ['clasico', 'misterio', 'caos'].forEach(m => {
     const card = document.querySelector(`[data-modo="${m}"]`);
     if (!card) return;
@@ -1938,6 +1941,7 @@ function actualizarSeleccionModo() {
     const tieneJugadores = totalJugadores >= reglasMinimo[m];
 
     card.classList.toggle('modo-seleccionado', esSeleccionado);
+    card.setAttribute('aria-disabled', tieneJugadores ? 'false' : 'true');
 
     if (!tieneJugadores) {
       card.style.opacity = '0.6';
@@ -2079,7 +2083,13 @@ function iniciarJuego() {
 
   if (!pick) {
     reproducirSonido('error');
-    crearModal({ title: 'Error', body: `<p>La categoría "${categoriaRonda}" no tiene palabras cargadas.</p>`, okText: 'Cerrar' });
+    crearModal({
+      title: 'Error',
+      body: categoriaRonda
+        ? `<p>La categoría "${esc(categoriaRonda)}" no tiene palabras cargadas.</p>`
+        : '<p>No hay ninguna categoría válida seleccionada. Revisa «Editar categorías».</p>',
+      okText: 'Cerrar'
+    });
     cambiarPantalla('inicio');
     return;
   }
@@ -2089,43 +2099,13 @@ function iniciarJuego() {
 
   const numImp = parseInt($('numImpostores')?.value || 1);
 
-  if (estado.modoJuego === 'clasico') {
-    palabraImpostor = generarPalabraParecida(palabraRonda);
-    impostores = seleccionarImpostoresSinRepetir(orden, numImp);
-    srBlanco = [];
-    civilesRestantes = estado.jugadores.length - numImp;
-
-  } else if (estado.modoJuego === 'misterio') {
-    impostores = seleccionarImpostoresSinRepetir(orden, numImp);
-    const restantes = orden.filter(j => !impostores.includes(j));
-    if (restantes.length > 0) {
-      const elegido = obtenerCandidatoSrBlanco(restantes);
-      srBlanco = [elegido];
-      historialSrBlanco.push(elegido);
-    } else {
-      srBlanco = [];
-    }
-    civilesRestantes = estado.jugadores.length - numImp - srBlanco.length;
-
-  } else if (estado.modoJuego === 'caos') {
-    const total = jugadoresActivos.length;
-    const maxImpostores = Math.max(1, Math.floor(total / 3));
-    const numImpostores = Math.floor(Math.random() * maxImpostores) + 1;
-
-    impostores = seleccionarImpostoresSinRepetir(orden, numImpostores);
-    const restantes = orden.filter(j => !impostores.includes(j));
-
-    let numSrBlanco = 1;
-    if (total >= 8 && Math.random() > 0.5) {
-      numSrBlanco = 2;
-    }
-
-    const maxSrBlancoPermitidos = Math.max(1, numImpostores - 1);
-    numSrBlanco = Math.min(numSrBlanco, maxSrBlancoPermitidos);
-
-    srBlanco = mezclarArray(restantes).slice(0, numSrBlanco);
-    civilesRestantes = total - impostores.length - srBlanco.length;
-  }
+  const reparto = repartirRoles(orden, { modo: estado.modoJuego, numImpostores: numImp }, {
+    seleccionarImpostoresSinRepetir, obtenerCandidatoSrBlanco, mezclarArray
+  });
+  impostores = reparto.impostores;
+  srBlanco = reparto.srBlanco;
+  palabraImpostor = generarPalabraParecida(palabraRonda);
+  civilesRestantes = estado.jugadores.length - impostores.length - srBlanco.length;
 
   // Guardamos quiénes eran los roles originales de esta ronda,
   // porque impostores/srBlanco se van vaciando a medida que se eliminan jugadores.
@@ -2214,7 +2194,7 @@ function revelarPalabra() {
           <div class="info-box info-box-aliados">
             <div class="info-box-titulo">🤝 Tus aliados</div>
             <div class="aliados-lista">
-              ${aliados.map(a => `<span class="aliado-badge">${a}</span>`).join('')}
+              ${aliados.map(a => `<span class="aliado-badge">${esc(a)}</span>`).join('')}
             </div>
           </div>
         `;
@@ -2232,7 +2212,7 @@ function revelarPalabra() {
       htmlContenido += `
         <div class="info-box info-box-categoria">
           <div class="info-box-titulo">📂 Categoría</div>
-          <div class="info-box-categoria-nombre">${categoriaRonda}</div>
+          <div class="info-box-categoria-nombre">${esc(categoriaRonda)}</div>
         </div>
       `;
     }
@@ -2243,7 +2223,7 @@ function revelarPalabra() {
       htmlContenido += `
         <div class="pista-impostor-wrapper">
           <div class="pista-label">🕵️ Pista clave</div>
-          <div class="pista-contenido">${pista}</div>
+          <div class="pista-contenido">${esc(pista)}</div>
         </div>
       `;
     }
@@ -2257,7 +2237,7 @@ function revelarPalabra() {
     contenido.innerHTML = htmlContenido;
   } else {
     if ($('rolJugador')) $('rolJugador').innerHTML = 'Eres <strong style="color: #3b82f6;">CIVIL</strong> 👥';
-    contenido.innerHTML = `${palabraRonda}<div class="categoria-info">Categoría: ${categoriaRonda}</div>`;
+    contenido.innerHTML = `${esc(palabraRonda)}<div class="categoria-info">Categoría: ${esc(categoriaRonda)}</div>`;
   }
 
   const btn = $('btnSiguiente');
@@ -2408,6 +2388,27 @@ function iniciarVotacion() {
   }
 }
 
+// Dibuja los candidatos con nodos DOM (sin onclick en línea): los nombres pueden llevar comillas o símbolos
+function pintarOpcionesVotacion(lista, alElegir) {
+  const cont = $('listaVotacion');
+  if (!cont) return;
+  cont.innerHTML = '';
+  lista.forEach((j) => {
+    const item = document.createElement('div');
+    item.className = 'jugador-item votacion-item';
+    item.dataset.jugador = j;
+    item.setAttribute('role', 'button');
+    item.tabIndex = 0;
+    const nombre = document.createElement('span');
+    nombre.textContent = j;
+    nombre.translate = false; // un nombre nunca se traduce
+    item.appendChild(nombre);
+    item.addEventListener('click', () => alElegir(j));
+    item.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alElegir(j); } });
+    cont.appendChild(item);
+  });
+}
+
 function votacionPorTurnos() {
   cambiarPantalla('votacion');
   votosRonda = {};
@@ -2415,9 +2416,15 @@ function votacionPorTurnos() {
   ordenVotacion = mezclarArray(jugadoresActivos);
   indiceVotante = 0;
 
+  if ($('votacionCrono')) $('votacionCrono').textContent = '';
+  if ($('votacionProgreso')) $('votacionProgreso').textContent = '';
+  if (document.querySelector('.instruccion-votacion')) {
+    document.querySelector('.instruccion-votacion').textContent = 'Cada jugador vota en secreto. Los votos se revelarán al final de la ronda.';
+  }
   const btn = $('btnConfirmarVotacion');
   if (btn) {
     btn.classList.remove('oculto');
+    btn.disabled = false;
     btn.textContent = 'Confirmar voto';
     btn.onclick = registrarVoto;
   }
@@ -2431,16 +2438,11 @@ function votacionGeneral() {
   if (document.querySelector('.instruccion-votacion')) {
     document.querySelector('.instruccion-votacion').textContent = 'Todos votan simultáneamente al mismo jugador.';
   }
-  const cont = $('listaVotacion');
-  if (!cont) return;
-  cont.innerHTML = jugadoresActivos.map(j =>
-    `<div class="jugador-item votacion-item" onclick="seleccionarVotoGeneral('${j}')" data-jugador="${j}">
-      <span>${j}</span>
-    </div>`
-  ).join('');
+  pintarOpcionesVotacion(jugadoresActivos, seleccionarVotoGeneral);
   const btn = $('btnConfirmarVotacion');
   if (btn) {
     btn.classList.remove('oculto');
+    btn.disabled = false;
     btn.onclick = confirmarVotacionGeneral;
     btn.textContent = 'Confirmar votación';
   }
@@ -2454,7 +2456,7 @@ function seleccionarVotoGeneral(jugador) {
   document.querySelectorAll('.votacion-item').forEach(item => {
     item.classList.remove('votacion-seleccionado');
   });
-  const item = document.querySelector(`[data-jugador="${jugador}"]`);
+  const item = Array.from(document.querySelectorAll('.votacion-item')).find(el => el.dataset.jugador === jugador);
   if (item) {
     item.classList.add('votacion-seleccionado');
     votoGeneral = jugador;
@@ -2477,12 +2479,7 @@ function mostrarVotacionJugador() {
   if ($('tituloVotacion')) $('tituloVotacion').textContent = `🗳️ Turno de: ${votante}`;
   const cont = $('listaVotacion');
   if (!cont) return;
-  const opciones = jugadoresActivos.filter(j => j !== votante);
-  cont.innerHTML = opciones.map(j =>
-    `<div class="jugador-item votacion-item" onclick="seleccionarVoto('${j}')" data-jugador="${j}">
-      <span>${j}</span>
-    </div>`
-  ).join('');
+  pintarOpcionesVotacion(jugadoresActivos.filter(j => j !== votante), seleccionarVoto);
 }
 
 function seleccionarVoto(jugador) {
@@ -2493,7 +2490,7 @@ function seleccionarVoto(jugador) {
     item.classList.remove('votacion-seleccionado');
   });
 
-  const item = document.querySelector(`[data-jugador="${jugador}"]`);
+  const item = Array.from(document.querySelectorAll('.votacion-item')).find(el => el.dataset.jugador === jugador);
   if (item) {
     item.classList.add('votacion-seleccionado');
     votoActual = jugador;
@@ -2545,10 +2542,10 @@ function procesarResultadosVotacion() {
 
   let mensaje = '<div>';
   if (estado.tipoVotacion === 'general') {
-    mensaje += `<p><strong>${Object.keys(votosRonda)[0]}</strong> fue expulsado</p>`;
+    mensaje += `<p><strong>${esc(Object.keys(votosRonda)[0])}</strong> fue expulsado</p>`;
   } else {
     Object.keys(votosRonda).forEach(jugador => {
-      mensaje += `<p><strong>${jugador}</strong>: ${votosRonda[jugador].length} votos (${votosRonda[jugador].join(', ')})</p>`;
+      mensaje += `<p><strong>${esc(jugador)}</strong>: ${votosRonda[jugador].length} votos (${votosRonda[jugador].map(esc).join(', ')})</p>`;
     });
   }
   mensaje += '</div>';
@@ -2592,7 +2589,7 @@ function procesarResultadosVotacion() {
       if (srBlanco.length > 0) {
         titulo = '✅ ¡Impostor eliminado!';
         mensajeFinal = `${mensaje}
-          <p>🧾 <strong>${elegido}</strong> era <strong>${rolElegido}</strong></p>
+          <p>🧾 <strong>${esc(elegido)}</strong> era <strong>${rolElegido}</strong></p>
           <p>⚠️ Todos los impostores eliminados, pero aún queda el Sr. Blanco.</p>
           <p>🎯 ¡Continúa votando para encontrarlo!</p>
           ${mostrarEstadoActual()}`;
@@ -2601,9 +2598,9 @@ function procesarResultadosVotacion() {
       } else {
         titulo = '🏆 ¡VICTORIA CIVIL!';
         mensajeFinal = `${mensaje}
-          <p>🧾 <strong>${elegido}</strong> era <strong>${rolElegido}</strong></p>
+          <p>🧾 <strong>${esc(elegido)}</strong> era <strong>${rolElegido}</strong></p>
           <p>¡Todos los enemigos fueron eliminados!</p>
-          <p>📘 Palabra secreta: <strong>${palabraRonda}</strong></p>`;
+          <p>📘 Palabra secreta: <strong>${esc(palabraRonda)}</strong></p>`;
         reproducirSonido('victoria');
         partidaFinalizada = true;
         registrarEstadisticasRonda('civiles');
@@ -2613,7 +2610,7 @@ function procesarResultadosVotacion() {
     } else {
       titulo = '✅ ¡Acierto!';
       mensajeFinal = `${mensaje}
-        <p>🧾 <strong>${elegido}</strong> era <strong>${rolElegido}</strong></p>
+        <p>🧾 <strong>${esc(elegido)}</strong> era <strong>${rolElegido}</strong></p>
         <p>Quedan ${impostores.length} impostores.</p>
         ${mostrarEstadoActual()}`;
     }
@@ -2623,7 +2620,7 @@ function procesarResultadosVotacion() {
 
     titulo = '❌ ¡Error!';
     mensajeFinal = `${mensaje}
-      <p>🧾 <strong>${elegido}</strong> era <strong>${rolElegido}</strong></p>
+      <p>🧾 <strong>${esc(elegido)}</strong> era <strong>${rolElegido}</strong></p>
       ${mostrarEstadoActual()}`;
   }
 
@@ -2664,28 +2661,39 @@ function obtenerCandidatoSrBlanco(jugadores) {
     disponibles = [...jugadores];
   }
 
-  return disponibles[Math.floor(Math.random() * disponibles.length)];
+  const elegido = disponibles[Math.floor(Math.random() * disponibles.length)];
+  historialSrBlanco = [...historialSrBlanco, elegido].slice(-5);
+  return elegido;
 }
 
 function verificarVictoriaSrBlanco(intento, palabraRonda) {
   const intentoNorm = normalizarTexto(intento);
   const palabraNorm = normalizarTexto(palabraRonda);
+  if (!intentoNorm || !palabraNorm) return false;
+  if (intentoNorm === palabraNorm) return true;
 
-  if (!intentoNorm) return false;
+  // Singular / plural: «gato» ↔ «gatos»
+  if (palabraNorm.length >= 4 && (intentoNorm === palabraNorm + 's' || palabraNorm === intentoNorm + 's')) return true;
 
-  if (
-    intentoNorm === palabraNorm ||
-    intentoNorm === palabraNorm.slice(0, -1) ||
-    palabraNorm === intentoNorm.slice(0, -1)
-  ) {
-    return true;
+  // Erratas: 1 letra de diferencia desde 5 letras, 2 desde 10. Las palabras cortas deben ser exactas.
+  const maxErrores = Math.floor(Math.max(intentoNorm.length, palabraNorm.length) / 5);
+  if (maxErrores === 0) return false;
+  return distanciaEdicion(intentoNorm, palabraNorm) <= Math.min(2, maxErrores);
+}
+
+// Distancia de edición con intercambio de letras contiguas (elefnate → elefante cuenta como 1 error)
+function distanciaEdicion(a, b) {
+  const m = a.length, n = b.length;
+  const d = Array.from({ length: m + 1 }, (_, i) => [i, ...new Array(n).fill(0)]);
+  for (let j = 1; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const coste = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + coste);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+    }
   }
-
-  const distancia = distanciaLevenshtein(intentoNorm, palabraNorm);
-  const maxLen = Math.max(intentoNorm.length, palabraNorm.length);
-  const similitud = 1 - distancia / maxLen;
-
-  return similitud >= 0.6;
+  return d[m][n];
 }
 
 function obtenerRolJugador(jugador) {
@@ -2709,10 +2717,10 @@ function permitirAdivinanza(jugador, mensajeVotos) {
   modalBody.innerHTML = `
     ${mensajeVotos}
     <br>
-    <p><strong>${jugador}</strong> era el <span class="rol-misterio">Sr. Blanco</span> 🎩</p>
+    <p><strong>${esc(jugador)}</strong> era el <span class="rol-misterio">Sr. Blanco</span> 🎩</p>
     <p>El Sr. Blanco intentará adivinar la palabra secreta...</p>
     <p style="margin-top:20px; font-size:1.1em;">
-      ¿<strong>${jugador}</strong> adivinó correctamente?
+      ¿<strong>${esc(jugador)}</strong> adivinó correctamente?
     </p>
   `;
 
@@ -2728,7 +2736,7 @@ function permitirAdivinanza(jugador, mensajeVotos) {
       registrarEstadisticasRonda('srblanco');
       mostrarResultado(
         '🎉 ¡VICTORIA DEL SR. BLANCO!',
-        `<p><strong>${jugador}</strong> adivinó correctamente la palabra secreta.</p>
+        `<p><strong>${esc(jugador)}</strong> adivinó correctamente la palabra secreta.</p>
          <p>📘 Palabra correcta: <strong>${palabraRonda}</strong></p>`,
         true,
         'srblanco'
@@ -2740,7 +2748,7 @@ function permitirAdivinanza(jugador, mensajeVotos) {
       if (verificarEstadoPartida()) return;
       mostrarResultado(
         '🎩 Sr. Blanco Falló',
-        `<p><strong>${jugador}</strong> falló al adivinar la palabra.</p>
+        `<p><strong>${esc(jugador)}</strong> falló al adivinar la palabra.</p>
          ${mostrarEstadoActual()}`,
         false
       );
@@ -2850,16 +2858,16 @@ function verificarEstadoPartida() {
 
     let mensajeExpulsado = '';
     if (ultimoExpulsado && rolUltimoExpulsado) {
-      mensajeExpulsado = `<p>🚪 Último expulsado: <strong>${ultimoExpulsado}</strong> (${rolUltimoExpulsado})</p>`;
+      mensajeExpulsado = `<p>🚪 Último expulsado: <strong>${esc(ultimoExpulsado)}</strong> (${rolUltimoExpulsado})</p>`;
     }
 
     mostrarResultado(
       '😈 ¡VICTORIA IMPOSTOR!',
       `${mensajeExpulsado}
-       <p>🕵️ Impostores: <strong>${impostores.join(', ')}</strong></p>
-       <p>🎩 Sr. Blanco: <strong>${srBlanco.join(', ')}</strong></p>
+       <p>🕵️ Impostores: <strong>${impostores.map(esc).join(', ')}</strong></p>
+       <p>🎩 Sr. Blanco: <strong>${srBlanco.map(esc).join(', ')}</strong></p>
        <p>👥 Civiles restantes: <strong>${numCiviles}</strong></p>
-       <p>📘 Palabra secreta: <strong>${palabraRonda}</strong></p>`,
+       <p>📘 Palabra secreta: <strong>${esc(palabraRonda)}</strong></p>`,
       true,
       'impostores'
     );
@@ -2878,7 +2886,7 @@ function verificarVictoriaCivil() {
     mostrarResultado(
       '🏆 ¡VICTORIA CIVIL!',
       `<p>Todos los enemigos fueron eliminados.</p>
-       <p>📘 Palabra secreta: <strong>${palabraRonda}</strong></p>`,
+       <p>📘 Palabra secreta: <strong>${esc(palabraRonda)}</strong></p>`,
       true,
       'civiles'
     );
@@ -2914,32 +2922,52 @@ const CanvasView = {
   ctx: null,
   particles: [],
   mouse: { x: -1000, y: -1000 },
+  raf: 0,
+  reducido: false,
 
   init() {
     if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
+    this.reducido = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     this.resize();
     window.addEventListener('resize', () => this.resize());
-    window.addEventListener('mousemove', e => {
+    // pointermove cubre ratón, lápiz y dedo
+    window.addEventListener('pointermove', e => {
       this.mouse.x = e.clientX;
       this.mouse.y = e.clientY;
-    });
+    }, { passive: true });
+    window.addEventListener('pointerleave', () => { this.mouse.x = -1000; this.mouse.y = -1000; });
 
-    for (let i = 0; i < CONFIG.state.particleCount; i++) {
-      this.particles.push(
-        new Particle(this.canvas.width, this.canvas.height)
-      );
+    // menos partículas en pantallas pequeñas / móviles modestos (el dibujo es O(n²))
+    const pequeno = window.innerWidth < 600 || (navigator.hardwareConcurrency || 4) <= 4;
+    const cantidad = pequeno ? 48 : CONFIG.state.particleCount;
+    for (let i = 0; i < cantidad; i++) {
+      this.particles.push(new Particle(this.canvas.width, this.canvas.height));
     }
 
-    this.animate();
+    // Pausa la animación cuando la pestaña no se ve: ahorra batería
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { cancelAnimationFrame(this.raf); this.raf = 0; }
+      else if (!this.raf && !this.reducido) this.animate();
+    });
+
+    if (this.reducido) this.dibujar(false); // con «reducir movimiento»: un solo fotograma estático
+    else this.animate();
   },
 
   resize() {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
+    this.particles.forEach(p => {
+      p.w = this.canvas.width;
+      p.h = this.canvas.height;
+      p.x = Math.min(p.x, p.w);
+      p.y = Math.min(p.y, p.h);
+    });
+    if (this.reducido && this.ctx) this.dibujar(false);
   },
 
-  animate() {
+  dibujar(mover = true) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     const temaActual = document.body.dataset.theme || 'azul';
     const theme = CONFIG.themes[temaActual] || CONFIG.themes.azul;
@@ -2949,7 +2977,7 @@ const CanvasView = {
     const b = parseInt(hex.slice(5, 7), 16);
 
     this.particles.forEach((p, index) => {
-      p.update(this.mouse);
+      if (mover) p.update(this.mouse);
       this.ctx.fillStyle = theme.primary;
       this.ctx.beginPath();
       this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -2969,8 +2997,11 @@ const CanvasView = {
         }
       }
     });
+  },
 
-    requestAnimationFrame(() => this.animate());
+  animate() {
+    this.dibujar(true);
+    this.raf = requestAnimationFrame(() => this.animate());
   }
 };
 
@@ -2993,7 +3024,7 @@ class Particle {
     if (this.y < 0 || this.y > this.h) this.vy *= -1;
 
     const dist = Math.hypot(mouse.x - this.x, mouse.y - this.y);
-    if (dist < 120) {
+    if (dist < 120 && dist > 0.001) { // dist = 0 daba NaN y la partícula desaparecía para siempre
       const force = (120 - dist) / 120;
       this.x -= ((mouse.x - this.x) / dist) * force * 1.5;
       this.y -= ((mouse.y - this.y) / dist) * force * 1.5;
@@ -3197,6 +3228,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Activar escuchadores estáticos
   if ($('numJugadores')) {
     $('numJugadores').addEventListener('change', () => {
+      const v = parseInt($('numJugadores').value, 10);
+      const valido = Math.min(CONFIG_JUEGO.MAX_JUGADORES, Math.max(CONFIG_JUEGO.MIN_JUGADORES, Number.isFinite(v) ? v : CONFIG_JUEGO.MIN_JUGADORES));
+      $('numJugadores').value = valido;
+      // Si el número no cambió (el navegador dispara «change» al salir del campo) no se redibuja la lista:
+      // redibujarla hacía perder el foco al tocar un nombre justo después.
+      const lista = $('listaJugadores');
+      if (valido === estado.jugadores.length && lista && lista.children.length === valido) return;
       mostrarJugadores();
       actualizarLimitesImpostores();
       actualizarSeleccionModo();
@@ -3204,9 +3242,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if ($('numImpostores')) $('numImpostores').addEventListener('change', saveAll);
+  if ($('numImpostores')) {
+    $('numImpostores').addEventListener('change', () => {
+      const v = parseInt($('numImpostores').value, 10) || 1;
+      $('numImpostores').value = Math.min(calcularMaximosImpostores(), Math.max(1, v));
+      saveAll();
+    });
+  }
   if ($('pistaImpostor')) $('pistaImpostor').addEventListener('change', saveAll);
-  if ($('duracionPartida')) $('duracionPartida').addEventListener('change', saveAll);
+  if ($('duracionPartida')) {
+    $('duracionPartida').addEventListener('change', () => {
+      const v = parseInt($('duracionPartida').value, 10) || 3;
+      $('duracionPartida').value = Math.min(30, Math.max(1, v));
+      saveAll();
+    });
+  }
   if ($('numRondas')) $('numRondas').addEventListener('change', saveAll);
   if ($('tipoVotacion')) {
     $('tipoVotacion').addEventListener('change', () => {
@@ -3272,6 +3322,7 @@ const perfilApi = initPerfil({
   validarTextoCampo, normalizarNombre, CONFIG_JUEGO, online
 });
 window.__perfil = perfilApi;
+iniciarI18n(); // inglés para todas las pantallas (ver i18n.js)
 
 Object.assign(window, online, perfilApi, {
   rotarTema, exportarDatos, importarDatos, mostrarPanelEstadisticas, restablecerTodo,

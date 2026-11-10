@@ -70,6 +70,8 @@ el-impostor/
 ├── script.js         # Modo offline, categorías en la nube y arranque de Firebase
 ├── online.js         # Modo online completo (salas, sincronización, motor del anfitrión)
 ├── perfil.js         # Perfil, estadísticas por usuario, idioma, menú lateral, Google y cierre de sesión
+├── i18n.js           # Traductor español → inglés de TODAS las pantallas (diccionario + observador del DOM)
+├── fonts/            # Nunito y Special Elite (woff2 incluidos: funcionan sin internet)
 ├── social.js         # Chat de voz P2P (WebRTC) y reacciones flotantes
 ├── qr.js             # Generador de códigos QR (sin librerías) para compartir la sala
 ├── efectos.js        # Efectos visuales de victoria (confeti, brillo, rebote, sacudida, daño rojo)
@@ -77,7 +79,7 @@ el-impostor/
 ├── manifest.webmanifest  # PWA: nombre, colores e iconos de la app instalable
 ├── sw.js             # Service worker (red primero, caché solo sin conexión)
 ├── icons/            # Iconos de la app (ver sección "Iconos y PWA")
-├── tests/            # Simulador (Firestore en memoria) que juega partidas completas
+├── tests/            # Simulador (Firestore en memoria) + pruebas de lógica (logica.test.mjs)
 ├── convertir_sonidos.sh  # (opcional) convierte sonido/**.mp3 a .webm con ffmpeg
 ├── generar_iconos.py     # (opcional) regenera los iconos de la app
 └── sonido/           # Efectos de sonido (.mp3 / .webm) en juego/, resultados/, ui/ y especiales/
@@ -243,13 +245,9 @@ El juego se puede instalar como app (Android/iOS/escritorio). Coloca tus iconos 
 
 1. Firebase Console → **Authentication → Sign-in method → Anonymous → Activar**.
 2. Firebase Console → **Firestore Database → Rules** → pega el contenido de `firestore.rules` → **Publicar**.
-   Las estadísticas del perfil viven en `usuarios/{uid}`; añade también esta regla (cada usuario solo accede a su documento):
-
-   ```
-   match /usuarios/{uid} {
-     allow read, write: if request.auth != null && request.auth.uid == uid;
-   }
-   ```
+   El archivo ya incluye la regla de `usuarios/{uid}` (perfil y estadísticas, con validación). **No pegues ninguna regla suelta
+   adicional** para `usuarios`: en Firestore las reglas se suman y una regla del tipo `allow read, write: if request.auth.uid == uid`
+   anula toda la validación (cualquiera podría editarse las estadísticas a mano).
 2b. (Opcional, para «Vincular con Google») **Authentication → Sign-in method → Google → Activar**.
 3. (Recomendado) **Firestore → Time-to-live**: política sobre el campo `expiraEn` de la colección `salas` para borrar salas viejas (los TTL no borran subcolecciones; es solo limpieza).
 
@@ -282,6 +280,7 @@ cd tests && sh preparar.sh && node privada.mjs && node publica-misterio.mjs && n
 | `qr.js` | Generador de códigos QR (modo byte, versiones 1-10, ECC L/M/Q/H) sin dependencias; `crearMatrizQR()` / `dibujarQR()`. |
 | `social.js` | Voz P2P con WebRTC (malla, señalización por Firestore, indicador de quién habla, silencio automático) y reacciones flotantes. Lo crea `online.js` con `crearSocial({...})`. |
 | `manifest.webmanifest` / `sw.js` | App instalable (PWA) y caché de respaldo sin conexión. |
+| `i18n.js` | Inglés completo: `EXACTO` (frases) y `PATRONES` (frases con nombres/números). Se activa solo cuando `<html lang="en">`. Para añadir un texto nuevo, agrégalo ahí; lo que falte se queda en español. Un nombre de jugador nunca se traduce (`translate="no"` / `.nombre-jugador`). |
 | `online.js` | Modo online. `initOnline(deps)` devuelve las funciones que usa el HTML. Contiene: auth anónima, crear/unirse a salas, listeners, render por estado, motor del anfitrión (`evaluarHost` + transiciones), votación, Sr. Blanco, chat. |
 | `firestore.rules` | Seguridad: solo el anfitrión escribe estado/roles/`vivo`; cada jugador solo sus campos de interacción; roles privados; votos visibles según tipo; chat solo para miembros; cola pública protegida. |
 
@@ -319,3 +318,38 @@ Estudiante de Desarrollo de Software — Panamá
 ## 📄 Licencia
 
 Este proyecto fue desarrollado con fines educativos.
+
+---
+
+## 🛠️ Revisión de noviembre de 2026 (errores corregidos y mejoras)
+
+**Errores de lógica**
+- **Misterio offline** permitía 2 impostores con 6 jugadores (2 + Sr. Blanco = 3 enemigos contra 3 civiles → los impostores empezaban ganando). Ahora el reparto offline usa la misma función que online (`repartirRoles`) y los civiles siempre son mayoría. Verificado con 300 repartos por modo y tamaño (`tests/logica.test.mjs`).
+- **Caos offline** podía repartir roles injustos por la misma razón.
+- **Sr. Blanco** aceptaba «pato» por «gato» o «sal» por «sol» (similitud ≥ 60 %). Ahora solo tolera errata de 1 letra desde 5 letras (2 desde 10), plural simple e intercambio de letras contiguas.
+- **Sr. Blanco** podía repetirse ronda tras ronda: la rotación nunca se guardaba (online tampoco).
+- **Restablecer todo** solo recargaba la página y **no borraba nada**. Ahora limpia configuración, nombres, categorías locales, estadísticas locales y tema (conserva perfil e idioma).
+- **Votación online tras jugar offline**: el botón «Confirmar voto» conservaba el `onclick` del modo offline y mostraba «Selecciona a alguien» aunque ya hubieras elegido.
+- Los modales de un solo botón («Cerrar») mostraban también «Cancelar».
+- Nombres con comilla simple (`O'Neil`) rompían la votación offline; ahora los candidatos se crean con DOM y listeners.
+- Al escribir el número de jugadores se podía superar el máximo (99 jugadores) o bajar del mínimo; ahora se ajusta. Lo mismo con impostores y duración.
+- Al salir de «Configurar jugadores» enseguida se perdía el último nombre escrito (el guardado con retardo se cancelaba).
+- Al terminar de editar el número de jugadores, la lista se redibujaba y se perdía el foco al tocar un nombre.
+- Si el modo elegido (p. ej. Misterio) dejaba de ser posible al bajar jugadores, ahora se vuelve a Clásico.
+- El sonido «toca para activar» saltaba al abrir el juego solo por cargar el tema.
+- Mensaje de error claro cuando no hay categoría válida seleccionada.
+- El fondo animado: división por cero (partícula con `NaN`), no se adaptaba al redimensionar, no respetaba «reducir movimiento», no se pausaba con la pestaña oculta y era pesado en móviles.
+
+**Seguridad**
+- **Inyección de HTML (XSS):** palabras, pistas y categorías vienen de la nube y cualquier usuario puede escribirlas; el modo offline las insertaba sin escapar. Ahora todo se escapa (`esc()`).
+- **`firestore.rules`:** la regla suelta de `usuarios` que indicaba este README anulaba la validación de estadísticas. Eliminada; el perfil acepta el campo `actualizado` que escribe `perfil.js`; las categorías validan sus campos. *Sigue siendo posible que cualquier usuario autenticado borre categorías globales (el editor del juego lo usa): si quieres blindarlo, mueve la edición a una colección por usuario.*
+
+**Visual**
+- Faltaba **todo el CSS** del menú lateral (☰), el acceso, el perfil, las estadísticas, los avatares y los botones naranja/fantasma: se veían sin formato. Añadido (secciones 29-34 de `style.css`).
+- Cabecera compacta (ocupaba ~25 % de la pantalla y recortaba «EL IMPOSTOR»), título como sello de «caso abierto», barra de progreso solo durante la partida.
+- Tipografías propias incluidas (Nunito + Special Elite), fondo con degradados por tema, tarjetas y botones renovados, texto oscuro sobre los temas claros (amarillo, verde, naranja) para que se lea.
+- Zonas seguras del móvil (notch) y botones con la misma fuente que el resto.
+
+**Idioma:** inglés completo en todas las pantallas, modales y mensajes (`i18n.js`).
+
+> Nota: se subió `perfil.mjs` junto al código; es una prueba que necesita `mock-fs.mjs` y `mock-auth.mjs`, así que ahora está en `tests/`.
